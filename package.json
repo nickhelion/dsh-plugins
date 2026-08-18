@@ -1,0 +1,40 @@
+{
+  "name": "dsh-serverchan-notify",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness plugin: push a ServerChan3 (Server酱) notification whenever an agent turn finishes an answer — codex Stop-hook parity",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "files": [
+    "lib",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node smoke-test.mjs",
+    "test:live": "node test-send.mjs"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "cordis",
+    "serverchan",
+    "serverchan3",
+    "server酱",
+    "notification",
+    "webhook"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1"
+  }
+}
