@@ -1,0 +1,11 @@
+# dsh-serverchan-notify bundle patch — the row inserted when you run
+# `dsh plugin --profile <name> add dsh-serverchan-notify`.
+#
+# The row is deliberately minimal: every option comes from the plugin
+# defaults (SendKey from env / config / $DSH_HOME/secrets/serverchan_sendkey,
+# all five turn-end reasons, subagents skipped). Override anything by
+# addressing this row id from your own profile or home patch layer
+# ($DSH_HOME/cordis.patch.yml) — user layers outrank bundle layers.
+- insert:
+    - id: serverchan-notify
+      name: dsh-serverchan-notify

@@ -15,6 +15,7 @@ These rules are load-bearing; do not "improve" them away:
 | File | Role |
 | --- | --- |
 | `lib/index.js` | Plugin entry (default export `(ctx, config) => void`). Single source of truth for config semantics and SendKey resolution order. |
+| `cordis.patch.yml` | The bundle patch inserted by `dsh plugin add` — minimal row (`serverchan-notify`), all-default config. |
 | `smoke-test.mjs` | In-process test: real cordis `Context`, fake session, stubbed `fetch`. Run with `npm test`; `REPORT=1` prints the payload. |
 | `test-send.mjs` | Real push using the same key resolution order. |
 | `README.md` / `README.zh-CN.md` | Human docs (English / 中文). Keep both in sync for every config change. |

@@ -71,16 +71,21 @@ chmod 600 ~/.dsh/secrets/serverchan_sendkey
 
 ## 安装插件包
 
-加载器把 `name` 当作裸模块名从 profile 目录解析，以下方式任选其一：
+本包声明了 `dsh.bundle` manifest，一条命令即可安装（未上 npm 前用 github 协议）：
 
 ```bash
+# 安装到某个 profile（github 协议，无需 npm 发布）
+dsh plugin --profile web add github:nickhelion/dsh-serverchan-notify
+
 # npm（发布后）
 cd ~/.dsh/profiles && pnpm add dsh-serverchan-notify
 
-# 从 git clone
-git clone <仓库地址> dsh-serverchan-notify
+# 手动：clone + 软链进 profile 的模块目录
+git clone https://github.com/nickhelion/dsh-serverchan-notify
 ln -s "$(pwd)/dsh-serverchan-notify" ~/.dsh/profiles/node_modules/dsh-serverchan-notify
 ```
+
+包内自带的 `cordis.patch.yml` 以全默认配置插入插件行；如需覆盖某个选项，在自己的补丁层里按行 id `serverchan-notify` 重写即可。
 
 ## SendKey 解析顺序
 

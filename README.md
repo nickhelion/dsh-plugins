@@ -71,16 +71,21 @@ Plugin rows are only resolved at boot — **restart the harness process** after 
 
 ## Installing the package
 
-The loader resolves `name` as a bare module specifier from the profile, so any of these work:
+The package declares a `dsh.bundle` manifest, so it installs with one command (from GitHub until it is on npm):
 
 ```bash
+# install into a profile (github spec — works without an npm publish)
+dsh plugin --profile web add github:nickhelion/dsh-serverchan-notify
+
 # npm (once published)
 cd ~/.dsh/profiles && pnpm add dsh-serverchan-notify
 
-# from a git clone
-git clone <repo-url> dsh-serverchan-notify
+# manual: clone + symlink into the profile's module tree
+git clone https://github.com/nickhelion/dsh-serverchan-notify
 ln -s "$(pwd)/dsh-serverchan-notify" ~/.dsh/profiles/node_modules/dsh-serverchan-notify
 ```
+
+The bundled `cordis.patch.yml` inserts the plugin row with all-default config; override any option by addressing the row id `serverchan-notify` from your own patch layer.
 
 ## SendKey resolution
 
