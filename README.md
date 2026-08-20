@@ -4,6 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/dsh-qwen-token-plan-cn-responses.svg)](https://www.npmjs.com/package/dsh-qwen-token-plan-cn-responses)
 [![npm downloads](https://img.shields.io/npm/dm/dsh-qwen-token-plan-cn-responses.svg)](https://www.npmjs.com/package/dsh-qwen-token-plan-cn-responses)
 [![GitHub stars](https://img.shields.io/github/stars/nickhelion/dsh-qwen-token-plan-cn-responses?style=flat)](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/stargazers)
+[![Listed in Awesome DSH Plugins](https://img.shields.io/badge/listed-Awesome%20DSH%20Plugins-4c1)](https://github.com/vvlife/awesome-deepseek-harness-plugins#integrations--bridges)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 22.19+](https://img.shields.io/badge/Node.js-22.19%2B-339933)](https://nodejs.org/)
 
@@ -263,6 +264,8 @@ DSH 未能解析 `apiKeyEnv` 指向的凭据。确认 Key 存在于**启动 DSH 
 ## 致谢
 
 协议行为参考并交叉验证了 MIT 许可的 [`pi-extension-qwen-token-plan-cn-ex`](https://github.com/shamiao/pi-extension-qwen-token-plan-cn-ex)，但本项目拥有独立的 DSH Adapter、官方文档同步、缓存和流转换实现。详情见 [`NOTICE`](NOTICE)。
+
+本插件已被 [`awesome-deepseek-harness-plugins`](https://github.com/vvlife/awesome-deepseek-harness-plugins#integrations--bridges) 收录；仓库同时使用官方建议的 [`dsh-plugin`](https://github.com/topics/dsh-plugin) Topic，供社区目录自动发现。
 
 ## License
 
