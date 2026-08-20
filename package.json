@@ -16,7 +16,8 @@
   "exports": {
     ".": "./lib/index.js",
     "./catalog": "./lib/catalog.js",
-    "./harness": "./lib/harness.js"
+    "./harness": "./lib/harness.js",
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",
