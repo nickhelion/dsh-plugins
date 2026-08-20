@@ -8,11 +8,16 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # engines says >=18 — prove it on every supported line.
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
       - run: npm test
