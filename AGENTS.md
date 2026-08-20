@@ -6,7 +6,7 @@ dsh-serverchan-notify — a DeepSeek Harness (DSH) cordis plugin that pushes a S
 
 These rules are load-bearing; do not "improve" them away:
 
-1. **No keys, no machine paths in the repo.** SendKeys and absolute paths flow through env vars, files, or plugin config only (`lib/index.js` → `loadSendkey`). Committed files must contain no real SendKey and no string that looks like one (nothing starting with the ServerChan channel prefix), and no absolute paths under a user home or checkout directory.
+1. **No keys, no machine paths in the repo.** SendKeys and absolute paths flow through env vars, files, or plugin config only (`lib/index.js` → `loadSendkey`). Committed files must contain no real SendKey and no absolute paths under a user home or checkout directory. Exception: obviously-fake well-formed keys are allowed in test files to cover the URL-derivation branches — they must be loudly marked (contain `FAKE`, `TEST`, or `NOT-REAL`) and never look like a real key.
 2. **The listener must never affect the harness.** The `session/event` listener is synchronous: it only reads and schedules `deliver` (`void deliver(...)`). `deliver` catches everything and reports via `ctx.logger.warn`. Keep it that way — a throwing listener or a blocking push breaks the agent loop.
 3. **One push per finished top-level turn.** Trigger on `turn/end` only; skip subagent sessions unless `notifySubagents: true`. `interrupted` turns are never pushed.
 
