@@ -1,0 +1,10 @@
+# Qwen Token Plan 个人版 Responses API + 服务端内置工具。
+# API Key 只通过 DSH 凭据引用解析，不写入本文件。
+- insert:
+    - id: qwen-token-plan-cn-responses
+      name: dsh-qwen-token-plan-cn-responses
+      config:
+        providerId: qwen-token-plan-cn-responses
+        apiKeyEnv: QWEN_TOKEN_PLAN_CN_API_KEY
+        harness: auto
+        catalogRefreshMs: 21600000
