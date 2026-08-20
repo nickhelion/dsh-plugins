@@ -39,6 +39,17 @@
     "notification",
     "webhook"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickhelion/dsh-serverchan-notify.git"
+  },
+  "homepage": "https://github.com/nickhelion/dsh-serverchan-notify#readme",
+  "bugs": {
+    "url": "https://github.com/nickhelion/dsh-serverchan-notify/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=18"
