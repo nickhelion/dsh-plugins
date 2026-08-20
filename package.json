@@ -4,8 +4,12 @@
   "description": "DeepSeek Harness plugin: push a ServerChan3 (Server酱) notification whenever an agent turn finishes an answer — codex Stop-hook parity",
   "type": "module",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "exports": {
-    ".": "./lib/index.js"
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
   },
   "files": [
     "lib",
