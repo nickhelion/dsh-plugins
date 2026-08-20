@@ -1,6 +1,6 @@
 /**
- * 冒烟测试：在独立的 cordis 根上下文里挂载 dsh-serverchan-notify，
- * 用伪造的会话与 turn/end 事件验证插件签名、事件订阅与消息组装全链路。
+ * 冒烟测试：在两个独立的 cordis 根上下文里挂载 dsh-serverchan-notify，
+ * 覆盖两条 URL 推导分支、回合过滤规则与子代理开关。
  * fetch 被替换为探针，不会真实推送；REPORT=1 可打印完整报文。
  *
  * 先 `npm install`（安装 devDependency @deepseek-ai/cordis），再：
@@ -9,63 +9,80 @@
 import { Context } from "@deepseek-ai/cordis";
 import plugin from "./lib/index.js";
 
-const root = new Context();
-
-// 探针：捕获推送请求，不真正发送
-let captured = null;
+// 探针：捕获所有推送请求，不真正发送
+const pushes = [];
 globalThis.fetch = async (url, init) => {
-  captured = {
-    url,
-    title: new URLSearchParams(init.body.toString()).get("title"),
-    desp: new URLSearchParams(init.body.toString()).get("desp"),
-  };
+  const body = new URLSearchParams(init.body.toString());
+  pushes.push({ url, title: body.get("title"), desp: body.get("desp") });
   return { ok: true, status: 200, json: async () => ({ code: 0, message: "SUCCESS" }) };
 };
 
-// 假 key 直接内联进配置：插件无需读文件即可启用。
-// 刻意不使用 sctp 前缀——仓库内不应出现任何形似 SendKey 的字符串。
-await root.plugin(plugin, {
+function fakeSession(overrides = {}) {
+  return {
+    id: "session-test-1",
+    header: { cwd: "/tmp/example-project", delegationDepth: 0 },
+    events: [
+      { type: "session/title", data: { title: "冒烟测试对话" } },
+      { type: "assistant/message", data: { message: { content: [{ type: "text", text: "你好，这是测试回复正文。" }] } } },
+    ],
+    requestHeader: () => ({ config: { provider: "deepseek-official", model: "deepseek-v4-pro" } }),
+    ...overrides,
+  };
+}
+
+// 场景 1：不带通道号的 key → 通用域名；验证默认过滤
+// （子代理不推、非 turn/end 不推、interrupted 不推）
+const root1 = new Context();
+await root1.plugin(plugin, {
   sendkey: "SMOKE-TEST-FAKE-KEY",
   reasons: ["completed", "blocked", "error", "max-tokens", "aborted"],
   notifySubagents: false,
 });
+root1.emit("session/event", fakeSession(), { type: "turn/end", data: { turn: 1, reason: { kind: "completed" } } });
+root1.emit("session/event", fakeSession({ id: "session-sub-1", header: { delegationDepth: 1 } }), { type: "turn/end", data: { turn: 1, reason: { kind: "completed" } } });
+root1.emit("session/event", fakeSession(), { type: "step/end", data: { turn: 1, step: 1 } });
+root1.emit("session/event", fakeSession(), { type: "turn/end", data: { turn: 2, reason: { kind: "interrupted" } } });
 
-// 伪造一个会话对象（插件只读取这些字段）
-const fakeSession = {
-  id: "session-test-1",
-  header: { cwd: "/tmp/example-project", delegationDepth: 0 },
-  events: [
-    { type: "session/title", data: { title: "冒烟测试对话" } },
-    { type: "assistant/message", data: { message: { content: [{ type: "text", text: "你好，这是测试回复正文。" }] } } },
-  ],
-  requestHeader: () => ({ config: { provider: "deepseek-official", model: "deepseek-v4-pro" } }),
-};
-
-root.emit("session/event", fakeSession, {
-  type: "turn/end",
-  data: { turn: 1, reason: { kind: "completed" } },
+// 场景 2：带通道号的 key → 专属 push 域名；notifySubagents: true 时子代理也推
+const root2 = new Context();
+await root2.plugin(plugin, {
+  sendkey: "sctp1234t-FAKE-TEST-KEY-NOT-REAL",
+  notifySubagents: true,
 });
-
-// 子代理会话应被默认过滤
-root.emit("session/event", { ...fakeSession, id: "session-sub-1", header: { delegationDepth: 1 } }, {
-  type: "turn/end",
-  data: { turn: 1, reason: { kind: "completed" } },
-});
-
-// 非 turn/end 事件应被忽略
-root.emit("session/event", fakeSession, { type: "step/end", data: { turn: 1, step: 1 } });
+root2.emit("session/event", fakeSession(), { type: "turn/end", data: { turn: 1, reason: { kind: "completed" } } });
+root2.emit("session/event", fakeSession({ id: "session-sub-1", header: { delegationDepth: 1 } }), { type: "turn/end", data: { turn: 1, reason: { kind: "completed" } } });
 
 // 等待异步 deliver 完成
 await new Promise((resolve) => setTimeout(resolve, 1500));
 
-if (!captured) {
-  console.error("✘ 失败：没有捕获到任何推送请求");
-  process.exit(1);
+function assert(condition, message) {
+  if (condition) return;
+  console.error(`✘ ${message}`);
+  process.exitCode = 1;
 }
-console.log("✔ 插件挂载并订阅成功，捕获到一次推送（子代理与 step/end 均被正确过滤）");
-console.log("  URL:", captured.url.replace(/send\/[^/]+\//, "send/<key>/"));
-console.log("  title:", captured.title);
+
+const generic = pushes.find((p) => p.url.startsWith("https://sctapi.ftqq.com/"));
+const ft07 = pushes.filter((p) => p.url.startsWith("https://1234.push.ft07.com/"));
+
+assert(pushes.length === 3, `预期 3 次推送（1 通用域名 + 2 专属域名），实际 ${pushes.length} 次`);
+assert(generic?.url === "https://sctapi.ftqq.com/SMOKE-TEST-FAKE-KEY.send", "通用域名 URL 推导错误");
+assert(ft07.length === 2, `专属域名分支预期 2 次推送（顶层 + 子代理），实际 ${ft07.length} 次`);
+assert(ft07.every((p) => p.url === "https://1234.push.ft07.com/send/sctp1234t-FAKE-TEST-KEY-NOT-REAL.send"), "专属 push 域名 URL 推导错误");
+assert(ft07.some((p) => p.title.includes("冒烟测试对话")), "notifySubagents: true 时子代理未推送");
+
+if (process.exitCode) {
+  console.error("冒烟测试失败，捕获到的推送：");
+  for (const push of pushes) console.error("  ", push.url);
+  process.exit(process.exitCode);
+}
+
+console.log("✔ 全部断言通过：URL 双分支推导、子代理过滤、interrupted 忽略、notifySubagents 开关");
 if (process.env.REPORT === "1") {
-  console.log("  desp:\n" + captured.desp);
+  for (const push of pushes) {
+    console.log("\n===== 推送 =====");
+    console.log("  URL:", push.url);
+    console.log("  title:", push.title);
+    console.log("  desp:\n" + push.desp);
+  }
 }
 process.exit(0);
