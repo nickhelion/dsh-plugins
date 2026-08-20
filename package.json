@@ -1,0 +1,64 @@
+{
+  "name": "dsh-qwen-token-plan-cn-responses",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness adapter for Qwen Token Plan CN Responses API with live official model/tool catalog sync",
+  "author": "nickhelion",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses.git"
+  },
+  "homepage": "https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses#readme",
+  "bugs": {
+    "url": "https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/issues"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./catalog": "./lib/catalog.js",
+    "./harness": "./lib/harness.js"
+  },
+  "files": [
+    "lib",
+    "scripts",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "check": "node scripts/check-source.mjs && node --test",
+    "test": "node --test",
+    "test:live-catalog": "node scripts/refresh-catalog.mjs"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "qwen",
+    "token-plan",
+    "responses-api",
+    "harness-tools"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.19"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-credentials": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-llm": "^0.1.0-rc.6"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-credentials": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-llm": "0.1.0-rc.6"
+  }
+}

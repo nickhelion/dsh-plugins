@@ -1,0 +1,7 @@
+Protocol behavior and terminology were cross-checked against the MIT-licensed
+pi-extension-qwen-token-plan-cn-ex project by shamiao:
+https://github.com/shamiao/pi-extension-qwen-token-plan-cn-ex
+
+This package has its own DeepSeek Harness adapter, official-document catalog
+sync, cache and stream mapping implementation. Qwen and Alibaba Cloud product
+names are trademarks of their respective owners.
