@@ -1,6 +1,6 @@
 {
   "name": "dsh-qwen-token-plan-cn-responses",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness adapter for Qwen Token Plan CN Responses API with live official model/tool catalog sync",
   "author": "nickhelion",
   "repository": {
@@ -21,6 +21,12 @@
   "files": [
     "lib",
     "scripts",
+    "test",
+    "docs",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
@@ -39,10 +45,13 @@
   "keywords": [
     "deepseek-harness",
     "dsh",
+    "dsh-plugin",
     "qwen",
     "token-plan",
     "responses-api",
-    "harness-tools"
+    "harness-tools",
+    "llm-provider",
+    "openai-responses"
   ],
   "license": "MIT",
   "publishConfig": {

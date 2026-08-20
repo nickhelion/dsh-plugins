@@ -1,6 +1,9 @@
 # DSH Qwen Token Plan CN Responses
 
 [![CI](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/actions/workflows/ci.yml/badge.svg)](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/dsh-qwen-token-plan-cn-responses.svg)](https://www.npmjs.com/package/dsh-qwen-token-plan-cn-responses)
+[![npm downloads](https://img.shields.io/npm/dm/dsh-qwen-token-plan-cn-responses.svg)](https://www.npmjs.com/package/dsh-qwen-token-plan-cn-responses)
+[![GitHub stars](https://img.shields.io/github/stars/nickhelion/dsh-qwen-token-plan-cn-responses?style=flat)](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 22.19+](https://img.shields.io/badge/Node.js-22.19%2B-339933)](https://nodejs.org/)
 
@@ -75,15 +78,47 @@ Responses schema 中：
 - Token Plan 个人版 API Key；
 - DSH profile（以下以 `web` 为例）。
 
-### 从 GitHub 安装
+### 从 npm 安装（推荐）
 
-本项目目前尚未发布到 npm。使用 DSH 插件命令直接安装 GitHub 仓库：
+一条命令安装到 `web` profile：
 
 ```bash
-dsh plugin --profile web add github:nickhelion/dsh-qwen-token-plan-cn-responses
+dsh plugin --profile web add dsh-qwen-token-plan-cn-responses
 ```
 
-然后重启对应 DSH 进程。插件自带的 bundle patch 会注册默认提供方，无需手工复制整份模型列表。
+如果没有全局 `dsh` 命令：
+
+```bash
+npx @deepseek-ai/dsh plugin --profile web add dsh-qwen-token-plan-cn-responses
+```
+
+然后重启对应 DSH 进程。插件自带 bundle patch，会注册默认提供方，无需手工复制模型列表或填写上下文参数。
+
+升级：
+
+```bash
+dsh plugin --profile web up dsh-qwen-token-plan-cn-responses@latest
+```
+
+卸载：
+
+```bash
+dsh plugin --profile web remove dsh-qwen-token-plan-cn-responses
+```
+
+### 固定版本或从 GitHub 安装
+
+生产环境建议固定版本：
+
+```bash
+dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.1
+```
+
+也可直接安装 GitHub 分支或 commit：
+
+```bash
+dsh plugin --profile web add github:nickhelion/dsh-qwen-token-plan-cn-responses#main
+```
 
 如需本地开发安装：
 
@@ -184,6 +219,16 @@ npm pack --dry-run
 ```
 
 确定性测试不访问网络，也不需要 Token。架构说明见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)；Agent 开始修改前请阅读 [`AGENTS.md`](AGENTS.md)。
+
+### 给 Agent 的最短路径
+
+```text
+1. Read AGENTS.md.
+2. Run npm ci && npm run check.
+3. Keep credentials as references; never read or commit real keys.
+4. Change pure parsers/codecs behind their existing seams and add fixtures.
+5. Run npm pack --dry-run before proposing a release.
+```
 
 ## 排障
 
