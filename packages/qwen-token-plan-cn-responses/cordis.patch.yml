@@ -7,4 +7,3 @@
         providerId: qwen-token-plan-cn-responses
         apiKeyEnv: QWEN_TOKEN_PLAN_CN_API_KEY
         harness: auto
-        catalogRefreshMs: 21600000

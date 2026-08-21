@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "testedAt": "2026-08-21T09:36:51.000Z",
+  "endpoint": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/responses",
+  "method": "One minimal non-sensitive request per model and effort; HTTP acceptance is recorded separately from documented semantic aliases.",
+  "models": {
+    "qwen3.8-max": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "low", "medium", "xhigh"],
+      "defaultEffort": "xhigh",
+      "aliases": { "high": "xhigh", "max": "xhigh" },
+      "note": "Official native levels are low/medium/xhigh; high and max alias xhigh. Responses also accepts none/minimal."
+    },
+    "qwen3.7-max": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "defaultEffort": "xhigh"
+    },
+    "qwen3.7-plus": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "defaultEffort": "xhigh"
+    },
+    "qwen3.6-flash": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "defaultEffort": "xhigh"
+    },
+    "glm-5.2": {
+      "accepted": ["none", "minimal", "low", "medium"],
+      "rejected": ["high", "xhigh", "max"],
+      "semanticEfforts": [],
+      "defaultEffort": null,
+      "aliases": {},
+      "note": "Temporarily hide the control: official high/max fail on the Token Plan Responses endpoint, while accepted lower values have undocumented semantics."
+    },
+    "deepseek-v4-pro": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "high", "max"],
+      "defaultEffort": "high",
+      "aliases": { "low": "high", "medium": "high", "xhigh": "max" },
+      "note": "Official native levels are high/max; low/medium and xhigh are compatibility aliases."
+    },
+    "deepseek-v4-pro-0813": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "low", "high", "max"],
+      "defaultEffort": "high",
+      "aliases": { "medium": "high", "xhigh": "high" },
+      "note": "Official native levels are low/high/max; medium and xhigh are compatibility aliases."
+    },
+    "deepseek-v4-flash-0731": {
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "low", "high", "max"],
+      "defaultEffort": "high",
+      "aliases": { "medium": "high", "xhigh": "high" },
+      "note": "Official native levels are low/high/max; medium and xhigh are compatibility aliases."
+    }
+  }
+}

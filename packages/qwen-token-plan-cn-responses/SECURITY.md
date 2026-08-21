@@ -11,7 +11,7 @@ Please report vulnerabilities through the monorepo's private **Report a vulnerab
 - The key appears only in the outbound `Authorization` header.
 - Errors identify the credential reference, never any substring of its value.
 - Catalog downloads do not receive the key.
-- The catalog cache stores only public documentation, validators and parsed model metadata with mode `0600`.
+- The release-bundled catalog contains only public model metadata and reviewed compatibility evidence. Runtime creates no catalog cache and performs no documentation fetch.
 
 ## Pre-publication check
 

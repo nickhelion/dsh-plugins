@@ -17,7 +17,7 @@ Node.js 22.19 or newer is required to match current DeepSeek Harness releases.
 
 - Keep runtime authority in official docs, not README tables or copied third-party catalogs.
 - Add or update a deterministic fixture test for every parser/wire change.
-- Do not put real API keys, credential files, prompt transcripts or catalog caches in issues, fixtures or commits.
+- Do not put real API keys, credential files, prompt transcripts or probe responses in issues, fixtures or commits.
 - Avoid live provider calls in CI. If a live call is essential during development, use a minimal interactive prompt and report only redacted outcomes.
 - Explain whether a change affects DSH local functions, Qwen server-side tools, or both.
 

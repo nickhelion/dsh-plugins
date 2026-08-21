@@ -22,6 +22,7 @@
   },
   "files": [
     "lib",
+    "catalog",
     "scripts",
     "test",
     "docs",
@@ -42,7 +43,8 @@
   "scripts": {
     "check": "node scripts/check-source.mjs && node --test",
     "test": "node --test",
-    "test:live-catalog": "node scripts/refresh-catalog.mjs"
+    "catalog:sync": "node scripts/sync-catalog.mjs",
+    "reasoning:probe": "node scripts/probe-reasoning.mjs"
   },
   "keywords": [
     "deepseek-harness",

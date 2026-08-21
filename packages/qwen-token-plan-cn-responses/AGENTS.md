@@ -11,7 +11,11 @@ Expose Qwen Token Plan CN Personal models to DeepSeek Harness through a dedicate
 
 | Module | Responsibility |
 | --- | --- |
-| `lib/catalog.js` | Deep `CatalogManager` module: fetch, parse, validate, cache and atomically publish official catalog snapshots. |
+| `lib/catalog.js` | Runtime-only immutable catalog interface; imports the release-bundled JSON and never performs network I/O. |
+| `lib/catalog-source.js` | Maintainer-side pure parsers that compile official documents into a candidate catalog. |
+| `lib/catalog.snapshot.json` | Generated, reviewed catalog shipped with the npm release. |
+| `catalog/reasoning-probes.json` | Reviewed first-party Responses compatibility evidence and semantic effort policy. |
+| `scripts/sync-catalog.mjs` | Explicit maintainer/CI fetch-and-compile command. Never called by plugin runtime. |
 | `lib/harness.js` | Server-side Harness tool vocabulary, policy intersection and user-visible activity rendering. |
 | `lib/content.js` | Adapter from DSH provider-neutral messages/tools/images to Responses request items. |
 | `lib/sse.js` | Adapter from Qwen Responses SSE events to DSH `StreamChunk` values. |
@@ -27,7 +31,7 @@ From the monorepo root:
 ```bash
 npm ci
 npm run check --workspace dsh-qwen-token-plan-cn-responses
-npm run test:live-catalog --workspace dsh-qwen-token-plan-cn-responses  # optional network check
+npm run catalog:sync --workspace dsh-qwen-token-plan-cn-responses  # explicit maintainer network action
 npm run pack:check
 ```
 
@@ -35,7 +39,7 @@ npm run pack:check
 
 1. Never commit, log, snapshot or cache an API key. Configuration stores only the credential reference name.
 2. Resolve the key once per model call through `ctx.credentials`; environment lookup is only the service-less fallback.
-3. Never replace a working catalog with an empty, partial or invalid parse. All official sources must validate first.
+3. Runtime must never fetch documentation or mutate the model catalog. Catalog changes arrive only in reviewed, versioned npm releases.
 4. Model membership is `Personal text-capable models ∩ Responses-supported models`.
 5. Server-side Harness tools and DSH local function tools are different capabilities. Do not describe one as the other.
 6. `web_extractor` must be accompanied by `web_search`.
@@ -46,11 +50,11 @@ npm run pack:check
 
 ## Official source endpoints
 
-Prefer the machine-readable `.md` endpoints documented in `docs/CATALOG-SYNC.md`. HTML scraping is a fallback, not the primary interface. A documentation format change should fail closed and preserve last-known-good data.
+The daily repository workflow uses the machine-readable `.md` endpoints documented in `docs/CATALOG-SYNC.md`. HTML scraping is a fallback, not the primary interface. A documentation format change must fail the workflow without changing the bundled snapshot or publishing.
 
 ## Change workflow
 
-- Keep seams narrow: source fetching is replaceable in tests; parsing functions remain pure; the Cordis composition root only wires dependencies.
-- Update README's current matrix when publishing a release, but never turn that table into runtime authority.
+- Keep seams narrow: source fetching belongs to maintainer scripts, parsing functions remain pure, runtime sees only `CatalogSnapshot.snapshot()`, and the Cordis composition root only wires dependencies.
+- Update README's current matrix when publishing a release; `lib/catalog.snapshot.json`, not README or live documentation, is runtime authority.
 - When a new model appears without OpenClaw metadata, advertise it without invented context/output capacities rather than guessing.
 - Run `npm run security:scan` and the tarball audit before publishing.

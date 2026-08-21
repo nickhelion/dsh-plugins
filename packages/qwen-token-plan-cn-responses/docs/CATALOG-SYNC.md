@@ -1,36 +1,51 @@
-# Official catalog synchronization
+# Release-time official catalog synchronization
 
-## Sources
+## Boundary
 
-The runtime reads five machine-readable Markdown documents:
+The installed plugin never fetches documentation and never mutates its model list. `lib/catalog.snapshot.json` is generated in the repository, reviewed, versioned, and shipped in the npm tarball. Therefore one package version always exposes the same catalog.
+
+## Primary sources
+
+The maintainer sync reads five machine-readable official Markdown documents:
 
 1. Personal model membership: <https://platform.qianwenai.com/docs/token-plan/personal/token-plan-personal-overview.md>
 2. Per-model Harness capability table: <https://platform.qianwenai.com/docs/token-plan/best-practices/built-in-tools.md>
 3. OpenClaw model parameters: <https://platform.qianwenai.com/docs/developer-guides/clients-and-developer-tools/openclaw.md>
 4. Responses-supported model list and wire schema: <https://platform.qianwenai.com/docs/api-reference/chat/openai-responses.md>
-5. Model-specific reasoning-effort profiles: <https://platform.qianwenai.com/docs/api-reference/chat/openai-chat.md>
+5. Model-specific reasoning semantics: <https://platform.qianwenai.com/docs/api-reference/chat/openai-chat.md>
 
-## Merge algorithm
+`catalog/reasoning-probes.json` is separate reviewed evidence from the first-party Token Plan Responses endpoint. It records accepted/rejected wire values, semantic UI efforts, aliases, and the verification date without storing prompts, responses, or credentials.
+
+## Compile algorithm
 
 1. Parse Personal rows whose capability contains `文本生成`.
 2. Parse the Responses schema's explicit supported-model list.
 3. Intersect those IDs while preserving Personal documentation order.
-4. Attach context window, output cap and input modalities from the Personal OpenClaw JSON example.
-5. Attach model-specific reasoning efforts/defaults from the API reference. OpenClaw's `reasoning` boolean is not treated as a Responses effort-capability flag.
+4. Attach context window, output cap and input modalities from the OpenClaw example.
+5. Parse documented reasoning profiles, then apply reviewed Responses-probe overrides. Semantic UI efforts and accepted wire values remain distinct.
 6. Attach server-side tools only from the Harness document's **个人版** table.
-7. Validate that every source was present and all critical parses were non-empty.
-8. Atomically publish and persist the complete snapshot.
+7. Reject the whole candidate if any source or critical parse is incomplete.
+8. Compare the candidate with `lib/catalog.snapshot.json`; do nothing when identical.
 
-The embedded catalog is bootstrap availability, not runtime authority. It lets the provider appear during a first offline boot. Once an official snapshot succeeds, it becomes last-known-good.
+## Daily pull-request workflow
+
+`.github/workflows/catalog-sync.yml` runs daily and on manual dispatch:
+
+1. Fetch and compile the public documents with `npm run catalog:sync --workspace dsh-qwen-token-plan-cn-responses`.
+2. If the snapshot changed, prepare a patch version, changelog entry, README pin and root lockfile.
+3. Run deterministic tests and the npm tarball audit.
+4. Force-update the automation-owned branch and open or refresh one pull request.
+5. Require review. New models or reasoning changes must be checked with the local, credential-safe `reasoning:probe` command before merge.
+6. Merging the reviewed catalog PR triggers `publish.yml`, which publishes through npm Trusted Publishing and creates the package tag/release.
+
+No npm token or provider credential exists in repository Actions secrets.
 
 ## Failure behavior
 
-- Conditional requests use ETag and Last-Modified when the server supplies them.
-- Any failed request or parse rejects the whole candidate snapshot.
-- A rejected candidate does not mutate in-memory or on-disk last-known-good state.
-- Writes use a temporary file followed by rename.
-- The cache contains public documentation and parsed metadata only; it never contains credentials or prompts.
+- Any fetch/parse/schema failure makes the scheduled workflow fail without changing `main`.
+- A transient provider 429/5xx is inconclusive and must not remove an existing model.
+- A documented new model without reviewed reasoning evidence may be listed conservatively without invented effort controls.
+- A documentation/API conflict blocks unsafe controls. For example, `glm-5.2` currently rejects the documented `high/xhigh/max` values on the Personal Responses endpoint, so the release snapshot does not expose that selector.
+- `/models` is only a drift signal: it has historically returned 401 and currently omits a model that official docs and POST calls support.
 
-## Why not query `/models`
-
-A provider listing commonly returns IDs without context, modalities, reasoning semantics or per-model built-in tool support. The user-facing selector needs those facts, and the official documentation is the authoritative source that actually states them.
+See [`REASONING-CATALOG-RESEARCH.md`](REASONING-CATALOG-RESEARCH.md) for evidence and the complete probe matrix.

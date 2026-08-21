@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced runtime documentation polling/cache with an immutable catalog snapshot that is generated in the repository and shipped in each npm release.
+- Added a daily official-document workflow that opens a reviewed patch-release PR only when the generated catalog changes.
+- Added checked-in Responses compatibility evidence and a credential-safe maintainer probe for all seven reasoning wire values.
+
+### Fixed
+
+- Expose verified reasoning controls for Qwen 3.7/3.6 models and hide the unsafe GLM 5.2 control while its documented `high/xhigh/max` values return HTTP 400 on the Personal Responses endpoint.
+
 ## [0.1.4] - 2026-08-21
 
 ### Fixed

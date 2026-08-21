@@ -8,16 +8,11 @@ The public module is deliberately deep: `QwenTokenPlanResponsesAdapter` exposes 
 
 ## Modules and seams
 
-### Catalog source seam
+### Catalog seams
 
-`CatalogManager` accepts `fetchImpl` and a URL map. Production uses official Markdown endpoints; tests use in-memory responses. The manager exposes only:
+The runtime seam is deliberately tiny: `CatalogSnapshot.snapshot()` returns the deeply frozen, release-bundled `catalog.snapshot.json`. It has no fetch, refresh, cache, timer or mutation interface.
 
-- `snapshot()` — synchronous immutable-enough last-known-good view;
-- `start()` — load cache, refresh, then schedule refreshes;
-- `refresh()` — deduplicated refresh;
-- `stop()` — timer disposal.
-
-The cache and network are implementation details behind this seam.
+Official-document complexity lives on the maintainer side instead. Pure parsers in `catalog-source.js` compile injected document strings; `scripts/sync-catalog.mjs` is the only fetch adapter. The daily repository workflow runs that adapter and proposes a versioned snapshot through a pull request. Runtime cannot cross this seam accidentally.
 
 ### Content adapter
 
@@ -39,12 +34,12 @@ Server-side calls cannot become DSH tool-call blocks: those blocks mean “DSH m
 
 ### Credential seam
 
-The Adapter stores only `apiKeyEnv`, a credential reference. Each `stream()` resolves the current value through `ctx.credentials`; this preserves rotation without a plugin restart. Neither the catalog cache nor adapter instance retains the secret.
+The Adapter stores only `apiKeyEnv`, a credential reference. Each `stream()` resolves the current value through `ctx.credentials`; this preserves rotation without a plugin restart. Neither the release catalog nor adapter instance retains the secret.
 
 ## Request flow
 
 1. DSH selects the registered provider/model route.
-2. Adapter reads one catalog snapshot and resolves the credential.
+2. Adapter reads the release-bundled catalog snapshot and resolves the credential.
 3. Content Adapter builds stateless full-history Responses input.
 4. Tool policy intersects plugin configuration with the model's official capability set.
 5. Adapter performs one HTTP request with DSH attribution.
@@ -53,8 +48,8 @@ The Adapter stores only `apiKeyEnv`, a credential reference. Each `stream()` res
 
 ## Deliberate limitations
 
-- The catalog tracks documentation, not an undocumented `/models` endpoint.
-- Refresh is periodic, not push-based.
+- The release catalog tracks reviewed official documentation and probe evidence, not an undocumented `/models` endpoint.
+- Installed versions never refresh themselves; updates arrive through a new npm release.
 - Provider-side tool activity is display/replay text, not a new structured DSH block.
 - Unknown models may be called but receive no invented capacity metadata and no server-side tools.
 - `previous_response_id` is not used; DSH remains the durable source of conversation history.

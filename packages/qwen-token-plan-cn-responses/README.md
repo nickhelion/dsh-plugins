@@ -38,30 +38,30 @@ DSH StreamChunk ◄──────── Qwen Responses SSE
   - DSH 本地 `function` 工具；
   - 文本、推理、工具调用与工具结果多轮历史；
   - DSH 持久化图片附件。
-- 启动时同步官方目录，之后默认每 6 小时刷新。
-- ETag/Last-Modified 条件请求、完整校验、原子写入和 last-known-good 回退。
+- 模型目录随 npm 版本发布；用户运行时不抓取千问文档，同一版本行为可复现。
+- GitHub Actions 每天检查官方文档，有变化时生成静态候选快照和版本 PR，审查合并后才发布。
 - 模型选择器直接显示“内置工具 5 项 / 3 项 / 仅 DSH 工具”。
-- API Key 每次调用时从 DSH 凭据服务解析；插件配置、日志和目录缓存均不保存 Key。
+- API Key 每次调用时从 DSH 凭据服务解析；插件配置、日志和发布目录均不保存 Key。
 - 把联网搜索来源、代码解释器活动等服务端工具信息显示为简洁的回复附录。
 
 ## 当前官方能力矩阵
 
-以下是 **2026-08-21** 的官方文档同步结果。它只用于说明；运行时以模型选择器中的同步时间为准。
+以下是 **2026-08-21** 发布快照的官方文档与第一方 Responses 探测结果。运行时以已安装 npm 版本携带的快照为准。
 
 | 模型 | 输入 | 可调推理强度 | 服务端内置工具 | DSH 本地函数工具 |
 | --- | --- | --- | --- | --- |
-| `qwen3.8-max` | 文本、图片 | `low` / `medium` / `xhigh`（默认） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
-| `qwen3.7-max` | 文本 | 官方当前未列出档位 | 联网搜索、代码解释器、网页抓取 | 支持 |
-| `qwen3.7-plus` | 文本、图片 | 官方当前未列出档位 | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
-| `qwen3.6-flash` | 文本、图片 | 官方当前未列出档位 | 官方当前未列出 | 支持 |
-| `glm-5.2` | 文本 | `high`（默认）/ `max` | 官方当前未列出 | 支持 |
-| `deepseek-v4-pro` | 文本 | `high`（默认）/ `max` | 官方当前未列出 | 支持 |
-| `deepseek-v4-pro-0813` | 文本 | `low` / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
-| `deepseek-v4-flash-0731` | 文本 | `low` / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
+| `qwen3.8-max` | 文本、图片 | 关闭 / `low` / `medium` / `xhigh`（默认） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
+| `qwen3.7-max` | 文本 | 关闭及 Responses 七档（默认 `xhigh`） | 联网搜索、代码解释器、网页抓取 | 支持 |
+| `qwen3.7-plus` | 文本、图片 | 关闭及 Responses 七档（默认 `xhigh`） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
+| `qwen3.6-flash` | 文本、图片 | 关闭及 Responses 七档（默认 `xhigh`） | 官方当前未列出 | 支持 |
+| `glm-5.2` | 文本 | 暂不开放：`high/xhigh/max` 当前会被个人版 Responses 端点拒绝 | 官方当前未列出 | 支持 |
+| `deepseek-v4-pro` | 文本 | 关闭 / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
+| `deepseek-v4-pro-0813` | 文本 | 关闭 / `low` / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
+| `deepseek-v4-flash-0731` | 文本 | 关闭 / `low` / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
 
 这里的“官方未列出”只否定**服务端内置工具**，不影响模型通过 Responses `function_call` 使用 DSH 本地工具。个人版完整模型名单见[官方概述](https://platform.qianwenai.com/docs/token-plan/personal/token-plan-personal-overview)。
 
-OpenClaw 示例中的 `reasoning` 布尔值不是 Responses `reasoning.effort` 的能力表；插件会从官方 API 参数文档独立同步逐模型档位，避免把两种语义混为一谈。
+OpenClaw 示例中的 `reasoning` 布尔值不是 Responses `reasoning.effort` 的能力表。发布目录会区分官方语义档位、传输层接受值和别名映射；详见[推理档位研究](docs/REASONING-CATALOG-RESEARCH.md)。
 
 ### 图片搜索工具命名
 
@@ -172,7 +172,6 @@ qwen3.8-max（内置工具 5 项）
         providerId: qwen-token-plan-cn-responses
         apiKeyEnv: QWEN_TOKEN_PLAN_CN_API_KEY
         harness: auto
-        catalogRefreshMs: 21600000
 ```
 
 可以在 profile 或 `$DSH_HOME/cordis.patch.yml` 中按同一 entry id 覆盖配置。
@@ -184,9 +183,6 @@ qwen3.8-max（内置工具 5 项）
 | `apiKeyEnv` | `QWEN_TOKEN_PLAN_CN_API_KEY` | DSH 凭据引用名。 |
 | `endpoint` | Token Plan 北京 Responses 地址 | 一般无需修改。 |
 | `harness` | `auto` | 服务端工具策略。 |
-| `catalogRefreshMs` | `21600000` | 官方目录刷新周期；设为 `0` 可关闭周期刷新。 |
-| `catalogTimeoutMs` | `30000` | 每份官方文档的请求超时。 |
-| `catalogCacheFile` | `$DSH_HOME/cache/.../catalog.json` | last-known-good 缓存位置。 |
 
 `harness` 支持：
 
@@ -204,7 +200,7 @@ qwen3.8-max（内置工具 5 项）
 个人版中具备“文本生成”的模型 ∩ Responses API 支持模型
 ```
 
-然后从 OpenClaw 官方示例补充 context window、max tokens 和图片输入，从 API 参考补充逐模型推理强度，再从 Harness 文档的**个人版**表格补充逐模型工具能力。五份文档全部成功解析后才会替换目录；任何请求或格式异常都会保留现有快照。
+仓库的每日 Action 从 OpenClaw 官方示例补充 context window、max tokens 和图片输入，从 API 参考补充逐模型推理语义，再从 Harness 文档的**个人版**表格补充逐模型工具能力。它还合并已审查的第一方 Responses 探测证据。五份文档全部成功解析且结果发生变化时，才会生成候选快照和 patch 版本 PR；用户运行时完全不访问文档站。
 
 详见 [`docs/CATALOG-SYNC.md`](docs/CATALOG-SYNC.md)。
 
@@ -214,14 +210,17 @@ qwen3.8-max（内置工具 5 项）
 npm ci
 npm run check
 
-# 只验证当前官方文档能否解析；不读取 API Key，不调用模型
-npm run test:live-catalog
+# 维护者：抓取官方文档并更新候选静态快照；不读取 API Key
+npm run catalog:sync
+
+# 维护者：使用当前 shell 中的临时凭据探测指定模型七档；结果需人工审查
+npm run reasoning:probe -- qwen3.8-max
 
 # 检查未来发布包会包含什么
 npm pack --dry-run
 ```
 
-确定性测试不访问网络，也不需要 Token。架构说明见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)；Agent 开始修改前请阅读 [`AGENTS.md`](AGENTS.md)。
+普通测试和插件运行时均不访问官方文档，也不需要 Token。只有显式维护命令和每日仓库 Action访问文档；推理探测仅在维护者主动提供进程环境凭据时调用模型。架构说明见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)；Agent 开始修改前请阅读 [`AGENTS.md`](AGENTS.md)。
 
 ### 给 Agent 的最短路径
 
@@ -241,7 +240,7 @@ DSH 未能解析 `apiKeyEnv` 指向的凭据。确认 Key 存在于**启动 DSH 
 
 ### 模型列表仍是旧的
 
-重启会立即触发刷新，也可检查缓存快照中的 `syncedAt`。插件遇到官方文档不可达或格式变化时会故意保留 last-known-good，不会展示半份目录。
+模型目录跟随插件版本，不会在运行时刷新。执行 `dsh plugin --profile web up dsh-qwen-token-plan-cn-responses@latest` 并重启 DSH；如果官方刚更新但还没有新版本，请查看仓库中的自动目录 PR。
 
 ### 模型没有调用内置工具
 
@@ -258,14 +257,14 @@ DSH 未能解析 `apiKeyEnv` 指向的凭据。确认 Key 存在于**启动 DSH 
 
 ## 安全与隐私
 
-- 不要提交 `.credentials.yaml`、`.env`、目录缓存或真实对话日志。
+- 不要提交 `.credentials.yaml`、`.env`、探测响应或真实对话日志。
 - 插件不会把 Key 发往官方文档站点。
 - Token Plan 个人版有使用范围、数据授权和单设备等条款，使用前请阅读[官方订阅前须知](https://platform.qianwenai.com/docs/token-plan/personal/token-plan-personal-overview#订阅前须知)。
 - 漏洞请按 [`SECURITY.md`](SECURITY.md) 私下报告。
 
 ## 致谢
 
-协议行为参考并交叉验证了 MIT 许可的 [`pi-extension-qwen-token-plan-cn-ex`](https://github.com/shamiao/pi-extension-qwen-token-plan-cn-ex)，但本项目拥有独立的 DSH Adapter、官方文档同步、缓存和流转换实现。详情见 [`NOTICE`](NOTICE)。
+协议行为参考并交叉验证了 MIT 许可的 [`pi-extension-qwen-token-plan-cn-ex`](https://github.com/shamiao/pi-extension-qwen-token-plan-cn-ex)，并借鉴其“静态目录随版本发布”的运行时边界；本项目拥有独立的 DSH Adapter、每日候选目录 PR、探测证据和流转换实现。详情见 [`NOTICE`](NOTICE)。
 
 本插件已被 [`awesome-deepseek-harness-plugins`](https://github.com/vvlife/awesome-deepseek-harness-plugins#integrations--bridges) 收录；仓库同时使用官方建议的 [`dsh-plugin`](https://github.com/topics/dsh-plugin) Topic，供社区目录自动发现。
 

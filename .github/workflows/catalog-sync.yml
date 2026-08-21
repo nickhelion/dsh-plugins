@@ -1,0 +1,72 @@
+name: Check Qwen official catalog
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: qwen-official-catalog-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Fetch and compile official catalog
+        run: npm run catalog:sync --workspace dsh-qwen-token-plan-cn-responses
+      - name: Detect catalog change
+        id: change
+        shell: bash
+        run: |
+          if git diff --quiet -- packages/qwen-token-plan-cn-responses/lib/catalog.snapshot.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Prepare patch release
+        if: steps.change.outputs.changed == 'true'
+        run: |
+          node packages/qwen-token-plan-cn-responses/scripts/prepare-catalog-release.mjs
+          npm install --package-lock-only --ignore-scripts
+      - name: Validate candidate
+        if: steps.change.outputs.changed == 'true'
+        run: |
+          npm run check --workspace dsh-qwen-token-plan-cn-responses
+          npm run pack:check
+          git diff --check
+      - name: Push automation branch and open pull request
+        if: steps.change.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="automation/qwen-official-catalog"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add package-lock.json packages/qwen-token-plan-cn-responses
+          git commit -m "chore(qwen): refresh official catalog"
+          git push --force origin "HEAD:$branch"
+          existing="$(gh pr list --head "$branch" --state open --json url --jq '.[0].url // empty')"
+          if [[ -n "$existing" ]]; then
+            gh pr comment "$existing" --body "Official documentation changed again; the generated snapshot and candidate release were refreshed by workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID."
+          else
+            gh pr create \
+              --head "$branch" \
+              --base main \
+              --title "chore(qwen): refresh official catalog" \
+              --body "Daily official-document sync detected a catalog change. The PR contains a release-versioned static snapshot and patch bump; plugin runtime does not fetch documentation. CI passed in workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. If reasoning metadata changed or a model was added, run the local reasoning probe before merge. Merging publishes the prepared patch through npm Trusted Publishing."

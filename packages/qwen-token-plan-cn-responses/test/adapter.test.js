@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { QwenTokenPlanResponsesAdapter } from "../lib/adapter.js";
-import { parseOfficialCatalog } from "../lib/catalog.js";
+import { parseOfficialCatalog } from "../lib/catalog-source.js";
 import { DOCS, sseResponse } from "./fixtures.js";
 
 test("Adapter 从凭据 Seam 取 Key、注入模型工具能力并完成整条 HTTP/SSE 路径", async () => {

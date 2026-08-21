@@ -11,7 +11,7 @@ import { buildRequestBody } from "./content.js";
 import { describeHarnessTools, selectHarnessTools } from "./harness.js";
 import { responsesToDshChunks } from "./sse.js";
 
-const EFFORT_NAMES = Object.freeze({ low: "低", medium: "中", high: "高", xhigh: "超高", max: "最大" });
+const EFFORT_NAMES = Object.freeze({ none: "关闭", minimal: "最小", low: "低", medium: "中", high: "高", xhigh: "超高", max: "最大" });
 
 function reasoningInfo(model) {
   const ids = model.reasoningEfforts ?? (model.reasoning ? ["low", "medium", "xhigh"] : []);
@@ -46,7 +46,9 @@ function displayModel(provider, model, syncedAt) {
   const count = model.harnessTools.length;
   const effortText = model.reasoningEfforts?.length
     ? `${model.reasoningEfforts.join("/")}（默认 ${model.defaultReasoningEffort}）`
-    : "官方未列出可调档位";
+    : model.rejectedReasoningEfforts?.length
+      ? `暂不开放（端点拒绝 ${model.rejectedReasoningEfforts.join("/")}）`
+      : "官方未列出可调档位";
   return {
     provider,
     id: model.id,

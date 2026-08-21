@@ -46,6 +46,7 @@ npm test --workspace dsh-serverchan-notify
 6. **No install lifecycle scripts.** These plugins ship runnable JavaScript. Keep installation compatible with npm v12's scripts-off default. Release-time `prepack` checks are allowed; `preinstall`/`install`/`postinstall` are not.
 7. **Tag publication is reproducible.** `publish.yml` checks Tag/version equality, installs with scripts disabled, runs tests, audits the pack list, then publishes from a GitHub-hosted runner.
 8. **Do not hand-edit generated external Awesome lists.** Follow each upstream's contribution format and only claim behavior proven by code/tests.
+9. **Qwen catalog changes are build-time, not runtime.** The installed plugin reads a release-bundled snapshot and must never poll official documentation. `catalog-sync.yml` may open a reviewed patch-release PR; merging that PR is the publication approval.
 
 ## Package boundaries
 
