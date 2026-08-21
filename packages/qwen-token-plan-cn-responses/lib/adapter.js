@@ -8,7 +8,8 @@ import {
 import { credentialRef } from "@deepseek-ai/dsh-credentials";
 
 import { buildRequestBody } from "./content.js";
-import { describeHarnessTools, selectHarnessTools } from "./harness.js";
+import { buildChatRequestBody, chatToDshChunks } from "./chat.js";
+import { selectHarnessTools } from "./harness.js";
 import { responsesToDshChunks } from "./sse.js";
 
 const EFFORT_NAMES = Object.freeze({ none: "关闭", minimal: "最小", low: "低", medium: "中", high: "高", xhigh: "超高", max: "最大" });
@@ -42,25 +43,22 @@ function httpFailure(status, text) {
   return "PROVIDER_ERROR";
 }
 
-function displayModel(provider, model, syncedAt) {
+function displayModel(provider, model) {
   const count = model.harnessTools.length;
-  const effortText = model.reasoningEfforts?.length
-    ? `${model.reasoningEfforts.join("/")}（默认 ${model.defaultReasoningEffort}）`
-    : model.rejectedReasoningEfforts?.length
-      ? `暂不开放（端点拒绝 ${model.rejectedReasoningEfforts.join("/")}）`
-      : "官方未列出可调档位";
+  const protocol = model.transport === "chat" ? "Chat" : "Responses";
+  const tools = count ? `${count} 个内置工具` : "仅本地工具";
   return {
     provider,
     id: model.id,
-    name: count ? `${model.id}（内置工具 ${count} 项）` : `${model.id}（仅 DSH 工具）`,
-    description: `Responses API；推理强度：${effortText}；内置工具：${describeHarnessTools(model.harnessTools)}；官方目录同步：${syncedAt}`,
+    name: model.id,
+    description: `${protocol} · ${tools}`,
     inputModalities: [...model.input],
   };
 }
 
-/** Qwen Token Plan 个人版 Responses API Adapter。 */
+/** Qwen Token Plan 个人版 Adapter；仅 GLM 使用 Chat，其余使用 Responses。 */
 export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
-  constructor({ ctx, catalog, providerId, displayName, apiKeyEnv, endpoint, harnessMode, fetchImpl = globalThis.fetch }) {
+  constructor({ ctx, catalog, providerId, displayName, apiKeyEnv, endpoint, chatEndpoint, harnessMode, fetchImpl = globalThis.fetch }) {
     super();
     this.ctx = ctx;
     this.catalog = catalog;
@@ -68,6 +66,7 @@ export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
     this.displayName = displayName;
     this.apiKeyEnv = apiKeyEnv;
     this.endpoint = endpoint;
+    this.chatEndpoint = chatEndpoint || endpoint.replace(/\/responses\/?$/, "/chat/completions");
     this.harnessMode = harnessMode;
     this.fetchImpl = fetchImpl;
   }
@@ -78,7 +77,7 @@ export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
 
   async listModels(provider) {
     const catalog = this.catalog.snapshot();
-    return catalog.models.map((model) => displayModel(provider, model, catalog.syncedAt));
+    return catalog.models.map((model) => displayModel(provider, model));
   }
 
   async resolveModel(provider, modelId) {
@@ -87,7 +86,7 @@ export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
     if (!model) return { provider, id: modelId, name: modelId, description: "未出现在当前官方目录中；可尝试调用，但不注入内置工具", inputModalities: ["text"] };
     const reasoning = reasoningInfo(model);
     return {
-      ...displayModel(provider, model, catalog.syncedAt),
+      ...displayModel(provider, model),
       ...(Number.isFinite(model.contextWindow) ? { context: { contextWindow: model.contextWindow } } : {}),
       ...(Number.isFinite(model.maxTokens) ? { defaultMaxTokens: model.maxTokens } : {}),
       ...(reasoning ? { reasoning } : {}),
@@ -108,12 +107,16 @@ export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
     };
     const key = await this.#apiKey();
     const attachments = this.ctx.get?.("attachments");
-    const harnessTools = selectHarnessTools(model.harnessTools, this.harnessMode);
-    const request = await buildRequestBody(options, model, attachments, harnessTools);
+    const useChat = model.transport === "chat";
+    const routeName = useChat ? "GLM Chat Completions" : "Qwen Token Plan Responses";
+    const harnessTools = useChat ? [] : selectHarnessTools(model.harnessTools, this.harnessMode);
+    const request = useChat
+      ? await buildChatRequestBody(options, model)
+      : await buildRequestBody(options, model, attachments, harnessTools);
 
     let response;
     try {
-      response = await this.fetchImpl(this.endpoint, {
+      response = await this.fetchImpl(useChat ? this.chatEndpoint : this.endpoint, {
         method: "POST",
         headers: {
           ...attributionHeaders(),
@@ -125,17 +128,18 @@ export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
         signal: options.signal,
       });
     } catch (error) {
-      if (options.signal?.aborted) throw new LlmError("Qwen Responses 请求已取消", "ABORTED", { cause: error });
-      throw new LlmError(`无法连接 Qwen Token Plan Responses API：${error instanceof Error ? error.message : String(error)}`, "NETWORK", { cause: error });
+      if (options.signal?.aborted) throw new LlmError(`${routeName} 请求已取消`, "ABORTED", { cause: error });
+      throw new LlmError(`无法连接 ${routeName} API：${error instanceof Error ? error.message : String(error)}`, "NETWORK", { cause: error });
     }
     if (!response.ok || !response.body) {
       const text = (await response.text().catch(() => "")).slice(0, 2000);
-      throw new LlmError(`Qwen Token Plan Responses API 返回 HTTP ${response.status}${text ? `：${text}` : ""}`,
+      throw new LlmError(`${routeName} API 返回 HTTP ${response.status}${text ? `：${text}` : ""}`,
         httpFailure(response.status, text), {
           status: response.status,
           ...(retryAfterMs(response.headers) !== undefined ? { providerRetryAfterMs: retryAfterMs(response.headers) } : {}),
         });
     }
-    yield* responsesToDshChunks(response.body, options.signal);
+    if (useChat) yield* chatToDshChunks(response.body, options.signal);
+    else yield* responsesToDshChunks(response.body, options.signal);
   }
 }

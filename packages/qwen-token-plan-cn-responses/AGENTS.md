@@ -5,7 +5,7 @@ The monorepo root `AGENTS.md` still applies and takes precedence.
 
 ## Mission
 
-Expose Qwen Token Plan CN Personal models to DeepSeek Harness through a dedicated Responses API adapter, while deriving the advertised model and server-side tool catalog from official Qianwen documentation instead of a manually maintained list.
+Expose Qwen Token Plan CN Personal models to DeepSeek Harness through Responses by default and an isolated GLM Chat route, while deriving the advertised model and server-side tool catalog from official Qianwen documentation instead of a manually maintained list.
 
 ## Repository map
 
@@ -18,6 +18,7 @@ Expose Qwen Token Plan CN Personal models to DeepSeek Harness through a dedicate
 | `scripts/sync-catalog.mjs` | Explicit maintainer/CI fetch-and-compile command. Never called by plugin runtime. |
 | `lib/harness.js` | Server-side Harness tool vocabulary, policy intersection and user-visible activity rendering. |
 | `lib/content.js` | Adapter from DSH provider-neutral messages/tools/images to Responses request items. |
+| `lib/chat.js` | GLM-only Chat request/SSE codec; no other model may use this route without reviewed probe evidence. |
 | `lib/sse.js` | Adapter from Qwen Responses SSE events to DSH `StreamChunk` values. |
 | `lib/adapter.js` | DSH `LlmAdapter` implementation and credential/network boundary. |
 | `lib/index.js` | Cordis composition root. Keep it shallow. |
@@ -47,6 +48,7 @@ npm run pack:check
 8. Do not add a new public content-block type merely to display server-side activity; UI, compaction and replay would all need support. Render the concise activity appendix instead.
 9. Every provider request must include DSH `attributionHeaders()`.
 10. Changes to wire conversion or SSE lifecycle require fixture tests before a live call.
+11. `glm-5.2` alone uses Chat because its Responses effort mapping is broken; every other catalog model stays on Responses.
 
 ## Official source endpoints
 

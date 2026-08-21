@@ -191,6 +191,7 @@ export function parseOfficialCatalog(documents, syncedAt = new Date().toISOStrin
         id: entry.id,
         brand: entry.brand,
         capabilities: entry.capabilities,
+        ...(probe?.transport === "chat" ? { transport: "chat" } : {}),
         reasoning: Boolean(reasoningProfile),
         ...(reasoningProfile ? {
           reasoningEfforts: [...reasoningProfile.efforts],

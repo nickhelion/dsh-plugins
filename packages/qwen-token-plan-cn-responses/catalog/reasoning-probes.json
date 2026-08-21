@@ -1,8 +1,11 @@
 {
   "version": 1,
-  "testedAt": "2026-08-21T09:36:51.000Z",
-  "endpoint": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/responses",
-  "method": "One minimal non-sensitive request per model and effort; HTTP acceptance is recorded separately from documented semantic aliases.",
+  "testedAt": "2026-08-21T12:12:01.000Z",
+  "endpoint": {
+    "responses": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/responses",
+    "chat": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions"
+  },
+  "method": "One minimal non-sensitive request per model and effort; GLM-5.2 was additionally verified through Chat because the Responses effort mapping is broken.",
   "models": {
     "qwen3.8-max": {
       "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
@@ -31,12 +34,17 @@
       "defaultEffort": "xhigh"
     },
     "glm-5.2": {
-      "accepted": ["none", "minimal", "low", "medium"],
-      "rejected": ["high", "xhigh", "max"],
-      "semanticEfforts": [],
-      "defaultEffort": null,
-      "aliases": {},
-      "note": "Temporarily hide the control: official high/max fail on the Token Plan Responses endpoint, while accepted lower values have undocumented semantics."
+      "transport": "chat",
+      "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],
+      "rejected": [],
+      "semanticEfforts": ["none", "high", "max"],
+      "defaultEffort": "high",
+      "aliases": { "minimal": "none", "low": "high", "medium": "high", "xhigh": "max" },
+      "responses": {
+        "accepted": ["none", "minimal", "low", "medium"],
+        "rejected": ["high", "xhigh", "max"]
+      },
+      "note": "Use Chat Completions for reliable off/high/max controls; the Responses gateway still rejects its standard high/xhigh/max path."
     },
     "deepseek-v4-pro": {
       "accepted": ["none", "minimal", "low", "medium", "high", "xhigh", "max"],

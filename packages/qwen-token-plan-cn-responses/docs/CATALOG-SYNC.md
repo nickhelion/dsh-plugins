@@ -45,7 +45,7 @@ No npm token or provider credential exists in repository Actions secrets.
 - Any fetch/parse/schema failure makes the scheduled workflow fail without changing `main`.
 - A transient provider 429/5xx is inconclusive and must not remove an existing model.
 - A documented new model without reviewed reasoning evidence may be listed conservatively without invented effort controls.
-- A documentation/API conflict blocks unsafe controls. For example, `glm-5.2` currently rejects the documented `high/xhigh/max` values on the Personal Responses endpoint, so the release snapshot does not expose that selector.
+- A documentation/API conflict blocks unsafe controls. `glm-5.2` rejects `high/xhigh/max` on the Personal Responses endpoint, so its reviewed snapshot explicitly selects Chat and exposes only the independently meaningful `none/high/max` controls.
 - `/models` is only a drift signal: it has historically returned 401 and currently omits a model that official docs and POST calls support.
 
 See [`REASONING-CATALOG-RESEARCH.md`](REASONING-CATALOG-RESEARCH.md) for evidence and the complete probe matrix.

@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 22.19+](https://img.shields.io/badge/Node.js-22.19%2B-339933)](https://nodejs.org/)
 
-面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的千问 Token Plan 个人版 **Responses API Adapter**：自动跟踪官方模型目录，在模型选择器中明确标注服务端内置工具能力，同时保留 DSH 本地函数工具。
+面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的千问 Token Plan 个人版 Adapter：Qwen/DeepSeek 使用 Responses API，`glm-5.2` 使用 Chat Completions，全部模型均保留 DSH 本地函数工具。
 
 > 这是社区插件，不是阿里云、千问或 DeepSeek 官方项目。
 
@@ -40,7 +40,7 @@ DSH StreamChunk ◄──────── Qwen Responses SSE
   - DSH 持久化图片附件。
 - 模型目录随 npm 版本发布；用户运行时不抓取千问文档，同一版本行为可复现。
 - GitHub Actions 每天检查官方文档，有变化时生成静态候选快照和版本 PR，审查合并后才发布。
-- 模型选择器直接显示“内置工具 5 项 / 3 项 / 仅 DSH 工具”。
+- 模型选择器只显示模型 ID；说明精简为“协议 · 工具”。
 - API Key 每次调用时从 DSH 凭据服务解析；插件配置、日志和发布目录均不保存 Key。
 - 把联网搜索来源、代码解释器活动等服务端工具信息显示为简洁的回复附录。
 
@@ -54,7 +54,7 @@ DSH StreamChunk ◄──────── Qwen Responses SSE
 | `qwen3.7-max` | 文本 | 关闭及 Responses 七档（默认 `xhigh`） | 联网搜索、代码解释器、网页抓取 | 支持 |
 | `qwen3.7-plus` | 文本、图片 | 关闭及 Responses 七档（默认 `xhigh`） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
 | `qwen3.6-flash` | 文本、图片 | 关闭及 Responses 七档（默认 `xhigh`） | 官方当前未列出 | 支持 |
-| `glm-5.2` | 文本 | 暂不开放：`high/xhigh/max` 当前会被个人版 Responses 端点拒绝 | 官方当前未列出 | 支持 |
+| `glm-5.2` | 文本 | 关闭 / `high`（默认）/ `max`（Chat 路线） | 官方当前未列出 | 支持 |
 | `deepseek-v4-pro` | 文本 | 关闭 / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
 | `deepseek-v4-pro-0813` | 文本 | 关闭 / `low` / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
 | `deepseek-v4-flash-0731` | 文本 | 关闭 / `low` / `high`（默认）/ `max` | 官方当前未列出 | 支持 |
@@ -149,13 +149,13 @@ QWEN_TOKEN_PLAN_CN_API_KEY
 打开 DSH 模型选择器，选择提供方：
 
 ```text
-Qwen Token Plan 个人版（Responses + 内置工具）
+Qwen Token Plan 个人版
 ```
 
-再选择带能力标记的模型，例如：
+再选择模型，例如：
 
 ```text
-qwen3.8-max（内置工具 5 项）
+qwen3.8-max
 ```
 
 模型会自动决定是否使用已声明的服务端工具。Harness 工具按成功调用次数消耗 Credits，具体以[官方说明](https://platform.qianwenai.com/docs/token-plan/best-practices/built-in-tools#费用说明)为准。
@@ -179,9 +179,10 @@ qwen3.8-max（内置工具 5 项）
 | 字段 | 默认值 | 说明 |
 | --- | --- | --- |
 | `providerId` | `qwen-token-plan-cn-responses` | DSH 路由 ID。 |
-| `displayName` | `Qwen Token Plan 个人版（Responses + 内置工具）` | 选择器名称。 |
+| `displayName` | `Qwen Token Plan 个人版` | 选择器名称。 |
 | `apiKeyEnv` | `QWEN_TOKEN_PLAN_CN_API_KEY` | DSH 凭据引用名。 |
 | `endpoint` | Token Plan 北京 Responses 地址 | 一般无需修改。 |
+| `chatEndpoint` | Token Plan 北京 Chat Completions 地址 | 仅供 `glm-5.2` 使用，一般无需修改。 |
 | `harness` | `auto` | 服务端工具策略。 |
 
 `harness` 支持：
@@ -247,7 +248,7 @@ DSH 未能解析 `apiKeyEnv` 指向的凭据。确认 Key 存在于**启动 DSH 
 确认：
 
 1. 选择的是本插件的 Responses 提供方，而非原 Anthropic 路线；
-2. 模型名称不是“仅 DSH 工具”；
+2. 模型说明中不是“仅本地工具”；
 3. `harness` 不是 `none`；
 4. Prompt 确实需要该工具——`auto` 不保证每次都调用。
 

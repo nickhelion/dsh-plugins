@@ -32,7 +32,9 @@ test("运行时目录是随版本发布的只读快照", () => {
   assert.ok(Object.isFrozen(catalog));
   assert.ok(Object.isFrozen(catalog.models[0].reasoningEfforts));
   const glm = catalog.models.find((model) => model.id === "glm-5.2");
-  assert.equal(glm.reasoning, false);
-  assert.equal(glm.reasoningEfforts, undefined);
-  assert.deepEqual(glm.rejectedReasoningEfforts, ["high", "xhigh", "max"]);
+  assert.equal(glm.transport, "chat");
+  assert.equal(glm.reasoning, true);
+  assert.deepEqual(glm.reasoningEfforts, ["none", "high", "max"]);
+  assert.equal(glm.defaultReasoningEffort, "high");
+  assert.deepEqual(glm.rejectedReasoningEfforts, []);
 });

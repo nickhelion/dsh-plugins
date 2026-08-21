@@ -13,9 +13,10 @@ export function apply(ctx, config = {}) {
     ctx,
     catalog,
     providerId,
-    displayName: config.displayName || "Qwen Token Plan 个人版（Responses + 内置工具）",
+    displayName: config.displayName || "Qwen Token Plan 个人版",
     apiKeyEnv: config.apiKeyEnv || "QWEN_TOKEN_PLAN_CN_API_KEY",
     endpoint: config.endpoint || "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/responses",
+    chatEndpoint: config.chatEndpoint || "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions",
     harnessMode: normalizeHarnessMode(config.harness),
   });
   const disposeRegistration = ctx.llm.registerAdapter([providerId], adapter);

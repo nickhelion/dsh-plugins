@@ -16,7 +16,7 @@
    - Qwen 3.7/3.6：Responses 七档均接受；官方只明确“默认开启思考”，未给这三个模型单独的 effort 映射。可以展示 Responses 的六个非关闭档位，但文案必须标注“Responses 通用档位”，不能伪造 token-budget 映射。
    - `deepseek-v4-pro`：展示 `high / max`，默认 `high`；`low/medium → high`，`xhigh → max`。
    - `deepseek-v4-pro-0813`、`deepseek-v4-flash-0731`：展示 `low / high / max`，默认 `high`；`medium/xhigh → high`。
-   - `glm-5.2`：在厂商修复前不要把会直接 400 的 `high/max` 作为可发送选项。省略参数可正常使用默认思考；若要提供实验档位，只能把实测可调用的 `minimal/low/medium` 标为“兼容性临时值”，不能声称它们等价于官方的 `high/max`。
+   - `glm-5.2`：Responses 路线不发送会直接 400 的 `high/max`。正式插件改走已经跨协议验证的 Chat 路线，仅展示关闭 / `high` / `max`。
 
 ## 1. 官方目录与 API 契约
 
@@ -118,7 +118,7 @@ POST https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/response
 
 [阿里云 GLM-5.2 模型页](https://help.aliyun.com/zh/model-studio/glm-5-2) 当前列出的上下文长度、最大输出和最大思维链长度分别为 1048576、131072、131072。仓库中的 `maxTokens=16384` 目前是 DSH 请求的保守默认输出上限，不应误写成模型能力上限；若以后改名或拆字段，应分别表达“模型硬上限”和“插件默认请求上限”。
 
-对本插件的直接含义：当前保持 GLM-5.2 的 Responses 推理选择器隐藏是正确的止损措施。若要安全恢复 `关闭/high/max`，应为 GLM 增加协议级路由（Chat 或 Anthropic）并复用 DSH 工具，而不是把未公开的 Responses `thinking_budget` 当长期 API，或把 `minimal/low/medium` 冒充三个独立档位。
+对本插件的直接含义：GLM-5.2 已采用独立 Chat 路由并恢复 `关闭/high/max`。它继续使用 DSH 本地工具；其他模型的 Responses 路线和 Qwen 内置工具保持不变。插件不会把未公开的 Responses `thinking_budget` 当长期 API，也不会把 `minimal/low/medium` 冒充三个独立档位。
 
 ### 2.4 `/models` 不能单独作为目录权威
 
@@ -222,7 +222,7 @@ Pi 的 [`FULL_THINKING_LEVEL_MAP`](https://github.com/shamiao/pi-extension-qwen-
 
 ## 5. 调研发现与本次改造
 
-1. `glm-5.2` 的 `high/xhigh/max` 会返回 400；本次快照已暂时隐藏其推理控件，并保留接受/拒绝证据供后续复测。
+1. `glm-5.2` 的 Responses `high/xhigh/max` 会返回 400；跨协议复测后，目录改为 Chat 路由并展示关闭 / `high` / `max`，同时保留 Responses 接受/拒绝证据。
 2. 原运行时 `CatalogManager` 每六小时抓官方 Markdown；本次已改成包内只读快照，网络抓取迁移到每日仓库工作流。
 3. 原解析器混淆“模型语义”和“传输层接受值”；本次目录已分别保存语义档位、接受/拒绝值与别名映射。
 4. Pi 参考实现证明纯手工静态表会快速过时；本次采用“**构建时自动提 PR、审查后发版、运行时完全静态**”。

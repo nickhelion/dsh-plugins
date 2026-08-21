@@ -16,6 +16,7 @@ function validate(value) {
     if (!model?.id || ids.has(model.id)) throw new Error("bundled Qwen catalog contains an invalid or duplicate model id");
     ids.add(model.id);
     if (!Array.isArray(model.input) || !Array.isArray(model.harnessTools)) throw new Error(`bundled Qwen catalog model ${model.id} is malformed`);
+    if (model.transport !== undefined && model.transport !== "chat") throw new Error(`bundled Qwen catalog model ${model.id} has an invalid transport`);
     if (model.reasoning) {
       if (!Array.isArray(model.reasoningEfforts) || !model.reasoningEfforts.includes(model.defaultReasoningEffort)) {
         throw new Error(`bundled Qwen catalog model ${model.id} has an invalid reasoning profile`);

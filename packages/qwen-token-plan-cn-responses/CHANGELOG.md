@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Changed
+
+- Route only `glm-5.2` through Chat Completions so its verified off/high/max reasoning controls work; all other models remain on Responses.
+- Shorten every model selector entry to a plain model ID and a compact protocol/tool description.
+
 ## [0.1.5] - 2026-08-21
 
 ### Changed

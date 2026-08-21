@@ -1,9 +1,9 @@
 {
   "version": 3,
   "source": "official-docs+verified-probes",
-  "syncedAt": "2026-08-21T09:46:29.304Z",
+  "syncedAt": "2026-08-21T12:12:21.741Z",
   "fingerprint": "3d57122c4ebe555fcf7eda4c4075d480ae7f74045122ddb7e67f8b1ae6e794e0",
-  "reasoningProbedAt": "2026-08-21T09:36:51.000Z",
+  "reasoningProbedAt": "2026-08-21T12:12:01.000Z",
   "models": [
     {
       "id": "qwen3.8-max",
@@ -160,19 +160,30 @@
       "id": "glm-5.2",
       "brand": "智谱 AI",
       "capabilities": "推理模型、文本生成",
-      "reasoning": false,
+      "transport": "chat",
+      "reasoning": true,
+      "reasoningEfforts": [
+        "none",
+        "high",
+        "max"
+      ],
+      "defaultReasoningEffort": "high",
       "acceptedReasoningEfforts": [
         "none",
         "minimal",
         "low",
-        "medium"
-      ],
-      "rejectedReasoningEfforts": [
+        "medium",
         "high",
         "xhigh",
         "max"
       ],
-      "reasoningAliases": {},
+      "rejectedReasoningEfforts": [],
+      "reasoningAliases": {
+        "minimal": "none",
+        "low": "high",
+        "medium": "high",
+        "xhigh": "max"
+      },
       "input": [
         "text"
       ],
