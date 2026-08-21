@@ -13,7 +13,17 @@ An unpublished package has no npm Settings page, so its first public version is 
 
 1. Run `npm login --auth-type=web --registry=https://registry.npmjs.org`.
 2. Complete npm login and 2FA in the browser. Never paste credentials into chat or a repository file.
-3. From a clean checkout, run `npm run check && npm run pack:check && npm run security:scan`, then `npm publish --workspace <name> --access public`.
+3. From a clean checkout, run `npm run check && npm run pack:check && npm run security:scan`, then publish with the account's one-time password.
+
+   Some npm 11 clients return `E403` instead of prompting for a TOTP. In that case, enter the code only in the local terminal (hidden, never in chat or shell history):
+
+   ```bash
+   read -rsp "npm authenticator code: " NPM_OTP; echo
+   npm publish --workspace <name> --access public --otp="$NPM_OTP"
+   unset NPM_OTP
+   ```
+
+   Generate a fresh six-digit code for each package. This is a one-time bootstrap exception, not the normal release path.
 4. Open the new package on npmjs.com → **Settings → Trusted Publisher**.
 5. Configure GitHub Actions with these exact fields:
    - Organization or user: `nickhelion`

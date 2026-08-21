@@ -39,6 +39,7 @@ npm test --workspace dsh-serverchan-notify
 
 1. **No secrets.** Never commit or log API keys, SendKeys, npm tokens, OTPs, cookies, credential files, local session logs, or private filesystem paths. Run `npm run security:scan` before publication; it checks known local credentials against current files and the full Git history without printing them.
 2. **No long-lived npm publish token.** Do not create or restore an Automation/GAT wizard. Initial package bootstrap is interactive with 2FA; every later publish uses GitHub Actions Trusted Publishing (OIDC).
+   If bootstrap needs a TOTP, the human enters it with hidden terminal input as documented in `docs/RELEASING.md`; an Agent must never request it in chat or persist it.
 3. **One package, one version, one Tag prefix.** Qwen tags are `qwen-token-plan-cn-responses-vX.Y.Z`; ServerChan tags are `serverchan-notify-vX.Y.Z`.
 4. **Package independence.** A package may not import runtime code from another workspace unless that dependency is explicitly declared and there is a real interface reason. Installing one package must not activate another.
 5. **Official DSH packages remain peers.** Do not bundle a second Harness/Cordis runtime into production dependencies.
