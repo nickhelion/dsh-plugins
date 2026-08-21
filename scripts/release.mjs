@@ -18,7 +18,17 @@ const manifestPath = join("packages", definition.dir, "package.json");
 const changelog = readFileSync(join("packages", definition.dir, "CHANGELOG.md"), "utf8");
 if (!changelog.includes(`## [${version}]`)) throw new Error(`package changelog must already contain ## [${version}] in a committed change`);
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-if (manifest.version === version) throw new Error(`${name} is already ${version}`);
+const tag = `${definition.tag}-v${version}`;
+if (manifest.version === version) {
+  if (maybePush !== "--push") throw new Error(`${name} is already ${version}`);
+  const head = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  const tagged = execFileSync("git", ["rev-parse", `${tag}^{commit}`], { encoding: "utf8" }).trim();
+  if (head !== tagged) throw new Error(`${tag} does not point at HEAD; inspect and push explicitly`);
+  execFileSync("git", ["push", "origin", "main"], { stdio: "inherit" });
+  execFileSync("git", ["push", "origin", tag], { stdio: "inherit" });
+  console.log(`pushed existing ${tag}`);
+  process.exit(0);
+}
 const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error("run this script through npm");
 const published = spawnSync(process.execPath, [npmCli, "view", `${name}@${version}`, "version", "--registry=https://registry.npmjs.org"], { encoding: "utf8" });
@@ -35,7 +45,6 @@ execFileSync(process.execPath, [npmCli, "run", "pack:check"], { stdio: "inherit"
 execFileSync(process.execPath, [npmCli, "run", "security:scan"], { stdio: "inherit" });
 execFileSync("git", ["add", manifestPath, "package-lock.json"]);
 execFileSync("git", ["commit", "-m", `release(${definition.dir}): v${version}`], { stdio: "inherit" });
-const tag = `${definition.tag}-v${version}`;
 execFileSync("git", ["tag", "-a", tag, "-m", `${name} v${version}`]);
 console.log(`prepared ${tag}`);
 if (maybePush === "--push") {
