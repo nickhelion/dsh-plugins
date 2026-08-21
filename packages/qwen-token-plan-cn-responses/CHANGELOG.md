@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-21
+
 ### Fixed
 
 - Expose the official `low` / `high` / `max` reasoning-effort controls for `deepseek-v4-pro-0813` and `deepseek-v4-flash-0731`, plus `high` / `max` for current DeepSeek V4 and GLM models.
@@ -40,7 +42,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.3...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.4...HEAD
+[0.1.4]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.4
 [0.1.3]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.3
 [0.1.2]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.2
 [0.1.1]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.1
