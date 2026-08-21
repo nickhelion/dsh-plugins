@@ -1,6 +1,6 @@
 {
   "name": "dsh-qwen-token-plan-cn-responses",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "DeepSeek Harness adapter for Qwen Token Plan CN Responses API with live official model/tool catalog sync",
   "author": "nickhelion",
   "repository": {
