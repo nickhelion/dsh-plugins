@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-21
+
 ### Changed
 
 - Replaced runtime documentation polling/cache with an immutable catalog snapshot that is generated in the repository and shipped in each npm release.
@@ -52,7 +54,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.4...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.5...HEAD
+[0.1.5]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.5
 [0.1.4]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.4
 [0.1.3]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.3
 [0.1.2]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.2
