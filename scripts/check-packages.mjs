@@ -12,7 +12,10 @@ for (const entry of readdirSync("packages", { withFileTypes: true })) {
   const manifest = JSON.parse(readFileSync(join("packages", entry.name, "package.json"), "utf8"));
   if (manifest.private) continue;
   const stdout = execFileSync(process.execPath, [npmCli, "pack", "--dry-run", "--json", "--ignore-scripts", "--workspace", manifest.name], { encoding: "utf8" });
-  const report = JSON.parse(stdout)[0];
+  const parsed = JSON.parse(stdout);
+  // npm 11 returns an array while npm 12 keys workspace reports by package name.
+  const report = Array.isArray(parsed) ? parsed[0] : parsed[manifest.name] ?? Object.values(parsed)[0];
+  if (!report?.files) throw new Error(`${manifest.name}: unsupported npm pack --json response`);
   const files = report.files.map((file) => file.path);
   const bad = files.filter((file) => forbidden.test(file));
   const missing = required.filter((file) => !files.includes(file));
