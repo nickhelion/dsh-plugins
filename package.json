@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "check": "node scripts/run-workspaces.mjs check",
+    "check": "node scripts/check-release-workflow.mjs && node scripts/run-workspaces.mjs check",
     "test": "node scripts/run-workspaces.mjs test",
     "pack:check": "node scripts/check-packages.mjs",
     "security:scan": "node scripts/scan-local-secrets.mjs",

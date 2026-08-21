@@ -13,20 +13,56 @@ on:
 permissions:
   contents: write
   id-token: write
-
-concurrency:
-  group: npm-publish-${{ github.ref }}
-  cancel-in-progress: false
+  pull-requests: read
 
 jobs:
-  publish:
+  tag-catalog-release:
+    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
+    concurrency:
+      group: qwen-catalog-tag-${{ github.sha }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Tag only a merged catalog automation PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_pr="$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.merged_at != null and .head.ref == "automation/qwen-official-catalog")] | first | .number // empty')"
+          if [[ -z "$source_pr" ]]; then
+            echo "Snapshot changed outside the catalog automation PR; the normal version tag is authoritative."
+            exit 0
+          fi
+          version="$(node -p "require('./packages/qwen-token-plan-cn-responses/package.json').version")"
+          tag="qwen-token-plan-cn-responses-v$version"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "$tag already exists."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "dsh-qwen-token-plan-cn-responses v$version"
+          git push origin "$tag"
+
+  publish:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: npm-publish-${{ github.ref_name }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-          registry-url: "https://registry.npmjs.org"
+          registry-url: https://registry.npmjs.org
           package-manager-cache: false
       - name: Use an OIDC-capable npm CLI
         run: npm install --global npm@latest
@@ -36,45 +72,53 @@ jobs:
         run: |
           set -euo pipefail
           tag="${GITHUB_REF_NAME}"
-          case "${GITHUB_REF_TYPE}:$tag" in
-            tag:qwen-token-plan-cn-responses-v*)
+          case "$tag" in
+            qwen-token-plan-cn-responses-v*)
               workspace="dsh-qwen-token-plan-cn-responses"
               directory="packages/qwen-token-plan-cn-responses"
               version="${tag#qwen-token-plan-cn-responses-v}"
+              title="Qwen Token Plan CN v$version"
               ;;
-            tag:serverchan-notify-v*)
+            serverchan-notify-v*)
               workspace="dsh-serverchan-notify"
               directory="packages/serverchan-notify"
               version="${tag#serverchan-notify-v}"
+              title="ServerChan Notify v$version"
               ;;
-            branch:main)
-              workspace="dsh-qwen-token-plan-cn-responses"
-              directory="packages/qwen-token-plan-cn-responses"
-              version="$(node -p "require('./$directory/package.json').version")"
-              tag="qwen-token-plan-cn-responses-v$version"
-              ;;
-            *) echo "unsupported release ref: ${GITHUB_REF_TYPE}:$tag" >&2; exit 1 ;;
+            *) echo "unsupported release tag: $tag" >&2; exit 1 ;;
           esac
           actual="$(node -p "require('./$directory/package.json').version")"
           test "$actual" = "$version" || { echo "tag=$version package=$actual" >&2; exit 1; }
           echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "title=$title" >> "$GITHUB_OUTPUT"
       - run: npm ci --ignore-scripts
       - run: npm run check --workspace "${{ steps.package.outputs.workspace }}"
       - run: npm run pack:check
+      - name: Check whether this immutable version already exists
+        id: availability
+        shell: bash
+        run: |
+          if [[ "$(npm view "${{ steps.package.outputs.workspace }}@${{ steps.package.outputs.version }}" version 2>/dev/null || true)" == "${{ steps.package.outputs.version }}" ]]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish with npm Trusted Publishing
+        if: steps.availability.outputs.publish == 'true'
         run: npm publish --workspace "${{ steps.package.outputs.workspace }}" --access public
-      - name: Tag and release merged catalog updates
-        if: github.ref_type == 'branch'
+      - name: Verify npm and create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
-          tag="${{ steps.package.outputs.tag }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$tag" -m "${{ steps.package.outputs.workspace }} v${{ steps.package.outputs.version }}"
-          git push origin "$tag"
-          gh release create "$tag" \
-            --title "Qwen Token Plan CN Responses v${{ steps.package.outputs.version }}" \
-            --notes "Automated release of the reviewed, release-bundled official catalog. Published through npm Trusted Publishing with provenance."
+          set -euo pipefail
+          actual="$(npm view "${{ steps.package.outputs.workspace }}@${{ steps.package.outputs.version }}" version)"
+          test "$actual" = "${{ steps.package.outputs.version }}"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "GitHub release already exists."
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "${{ steps.package.outputs.title }}" \
+              --generate-notes
+          fi

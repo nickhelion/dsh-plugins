@@ -52,6 +52,8 @@ Repeat steps 3–5 for each new package. Each package gets one Trusted Publisher
 6. GitHub-hosted Actions exchanges its OIDC identity for a short-lived npm credential, publishes, and records provenance. No `NPM_TOKEN` exists.
 7. Verify the exact npm version, provenance, GitHub workflow and clean Git status.
 
+Only a **Tag job** may execute `npm publish`. A main-branch catalog merge merely creates the missing package Tag; that Tag then starts the same publisher used by normal releases. This prevents a release commit that changes `catalog.snapshot.json` from racing two publishers for one immutable npm version. Rerunning an already-published Tag skips the immutable publish and still verifies npm/GitHub release state.
+
 ## Reviewed Qwen catalog release
 
 The Qwen provider has a second, narrower path for official catalog drift:
@@ -59,7 +61,7 @@ The Qwen provider has a second, narrower path for official catalog drift:
 1. `catalog-sync.yml` checks public official documents daily and exits without a commit when the bundled snapshot is unchanged.
 2. A real change produces one automation PR containing the generated snapshot, patch version, changelog, README pin and lockfile.
 3. Review model additions/removals and reasoning semantics. Run the local `reasoning:probe` maintainer command for new or changed reasoning profiles; no provider credential is stored in GitHub.
-4. Merge only after review and green validation. The snapshot-path push on `main` runs this same trusted `publish.yml`, publishes through OIDC, then creates the package tag and GitHub release.
+4. Merge only after review and green validation. The snapshot-path push on `main` verifies that it came from the catalog automation PR and creates the package Tag; the Tag publishes through OIDC and creates the GitHub release.
 
 Installed plugins never fetch official documentation. Do not bypass this review path by editing the generated snapshot directly.
 
