@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-21
+
+### Security
+
+- Switched routine npm releases to GitHub OIDC Trusted Publishing with provenance and disabled traditional token publishing.
+
 ## [0.1.2] - 2026-08-21
 
 ### Changed
@@ -29,7 +35,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.2...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.3...HEAD
+[0.1.3]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.3
 [0.1.2]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.2
 [0.1.1]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.1
 [0.1.0]: https://github.com/nickhelion/dsh-plugins/releases/tag/v0.1.0

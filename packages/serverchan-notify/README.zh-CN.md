@@ -80,7 +80,7 @@ chmod 600 ~/.dsh/secrets/serverchan_sendkey
 dsh plugin --profile web add dsh-serverchan-notify
 
 # 固定版本
-dsh plugin --profile web add dsh-serverchan-notify@1.0.1
+dsh plugin --profile web add dsh-serverchan-notify@1.0.2
 
 # GitHub monorepo 回退
 dsh plugin --profile web add 'github:nickhelion/dsh-plugins#main&path:/packages/serverchan-notify'

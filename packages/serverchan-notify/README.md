@@ -80,7 +80,7 @@ The package declares a `dsh.bundle` manifest, so npm installation is one command
 dsh plugin --profile web add dsh-serverchan-notify
 
 # fixed version
-dsh plugin --profile web add dsh-serverchan-notify@1.0.1
+dsh plugin --profile web add dsh-serverchan-notify@1.0.2
 
 # GitHub monorepo fallback
 dsh plugin --profile web add 'github:nickhelion/dsh-plugins#main&path:/packages/serverchan-notify'

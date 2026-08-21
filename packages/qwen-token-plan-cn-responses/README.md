@@ -112,7 +112,7 @@ dsh plugin --profile web remove dsh-qwen-token-plan-cn-responses
 生产环境建议固定版本：
 
 ```bash
-dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.2
+dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.3
 ```
 
 也可直接安装 GitHub 分支或 commit：

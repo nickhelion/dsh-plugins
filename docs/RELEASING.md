@@ -11,31 +11,29 @@ Primary references:
 
 An unpublished package has no npm Settings page, so its first public version is bootstrapped interactively:
 
-1. Run `npm login --auth-type=web --registry=https://registry.npmjs.org`.
-2. Complete npm login and 2FA in the browser. Never paste credentials into chat or a repository file.
-3. From a clean checkout, run `npm run check && npm run pack:check && npm run security:scan`, then publish with the account's one-time password.
-
-   Some npm 11 clients return `E403` instead of prompting for a TOTP. In that case, enter the code only in the local terminal (hidden, never in chat or shell history):
+1. Use Node.js 24.15 or newer with npm 12 or newer for the current Passkey flow. On this workstation the known-good binaries live under `~/.nvm/versions/node/v24.15.0/bin`.
+2. Run `npm login --auth-type=web --registry=https://registry.npmjs.org` and complete the browser login with the npm Passkey stored in Bitwarden. npm's email-verification code is not a publishing second factor.
+3. From a clean checkout, run `npm run check && npm run pack:check && npm run security:scan`, then `npm publish --workspace <name> --access public`. Open the authentication URL printed by npm and approve the Passkey. Never paste credentials into chat or a repository file.
+4. Create the Trusted Publisher directly from npm CLI (no form filling and no token):
 
    ```bash
-   read -rsp "npm authenticator code: " NPM_OTP; echo
-   npm publish --workspace <name> --access public --otp="$NPM_OTP"
-   unset NPM_OTP
+   npm trust github <name> \
+     --file publish.yml \
+     --repo nickhelion/dsh-plugins \
+     --allow-publish \
+     --yes
    ```
 
-   Generate a fresh six-digit code for each package. This is a one-time bootstrap exception, not the normal release path.
-4. Open the new package on npmjs.com → **Settings → Trusted Publisher**.
-5. Configure GitHub Actions with these exact fields:
-   - Organization or user: `nickhelion`
-   - Repository: `dsh-plugins`
-   - Workflow filename: `publish.yml`
-   - Environment: leave blank unless the workflow is changed to use one
-   - Allowed action: `npm publish`
-6. Trigger a patch release and verify the npm provenance attestation.
-7. Set **Publishing access → Require two-factor authentication and disallow tokens**.
-8. Run `npm logout --registry=https://registry.npmjs.org` and confirm `~/.npmrc` has no npm auth token.
+5. Set the maximum package publishing restriction. In npm CLI, `mfa=publish` means 2FA is required and automation/bypass tokens are disallowed; Trusted Publishing OIDC remains allowed:
 
-Repeat steps 3–7 for each new package. Each package gets one Trusted Publisher, but both may authorize the same workflow filename.
+   ```bash
+   npm access set mfa=publish <name>
+   ```
+
+6. Trigger a patch release and verify the npm provenance attestation.
+7. Run `npm logout --registry=https://registry.npmjs.org` and confirm `~/.npmrc` has no npm auth token.
+
+Repeat steps 3–5 for each new package. Each package gets one Trusted Publisher, but both may authorize the same workflow filename.
 
 ## Normal Agent release (no npm login)
 
@@ -44,9 +42,9 @@ Repeat steps 3–7 for each new package. Each package gets one Trusted Publisher
 3. Prepare locally:
 
    ```bash
-   npm run release -- dsh-qwen-token-plan-cn-responses 0.1.2
+   npm run release -- dsh-qwen-token-plan-cn-responses 0.1.4
    # or
-   npm run release -- dsh-serverchan-notify 1.0.2
+   npm run release -- dsh-serverchan-notify 1.0.3
    ```
 
 4. Inspect the generated version commit and annotated Tag.
