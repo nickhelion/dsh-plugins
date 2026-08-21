@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Fixed
+
+- Expose the official `low` / `high` / `max` reasoning-effort controls for `deepseek-v4-pro-0813` and `deepseek-v4-flash-0731`, plus `high` / `max` for current DeepSeek V4 and GLM models.
+- Derive Responses reasoning profiles from the official API reference instead of misusing OpenClaw's unrelated `reasoning` boolean.
+
 ## [0.1.3] - 2026-08-21
 
 ### Security

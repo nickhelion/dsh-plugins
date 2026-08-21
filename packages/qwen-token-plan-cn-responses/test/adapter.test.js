@@ -51,4 +51,8 @@ test("Adapter 从凭据 Seam 取 Key、注入模型工具能力并完成整条 H
   const models = await adapter.listModels("qwen-token-plan-cn-responses");
   assert.match(models[0].name, /内置工具 5 项/);
   assert.match(models[2].name, /仅 DSH 工具/);
+
+  const deepseek = await adapter.resolveModel("qwen-token-plan-cn-responses", "deepseek-v4-pro-0813");
+  assert.deepEqual(deepseek.reasoning.efforts.map((effort) => effort.id), ["low", "high", "max"]);
+  assert.equal(deepseek.reasoning.defaultEffort, "high");
 });

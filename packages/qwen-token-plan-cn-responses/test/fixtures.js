@@ -47,6 +47,21 @@ components:
           type: string
           description: 模型名称。支持的模型包括 qwen3.8-max、qwen3.7-max、deepseek-v4-pro-0813、qwen3.6-flash。
 `,
+  chat: `# OpenAI Chat API 参考
+${"Chat API 参数说明".repeat(30)}
+        reasoning_effort:
+          type: string
+          description: |-
+            控制模型的推理力度。
+
+            **Qwen3.8-Max 与 Qwen3.8-Max-Preview：** 可选值：\`low\`、\`medium\`、\`xhigh\`。默认 \`xhigh\`。
+
+            **DeepSeek-V4 与 GLM 系列：** 可选值：\`high\`、\`max\`。适用于 \`glm-5.2\`、\`glm-5.1\`、\`glm-5\`、\`deepseek-v4-pro\`、\`deepseek-v4-flash\`（阿里云直供）（\`deepseek-v4-flash-0731\` 除外）。
+
+            **deepseek-v4-flash-0731、deepseek-v4-pro-0813：** 默认值：\`high\`。可选值：\`max\`、\`high\`、\`low\`。
+        clear_thinking:
+          type: boolean
+`,
 };
 
 export function sseResponse(events, status = 200) {

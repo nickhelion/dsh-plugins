@@ -26,3 +26,19 @@ test("DSH 历史、函数工具与服务端内置工具共同进入 Responses �
   assert.deepEqual(body.tools.map((tool) => tool.type), ["function", "web_search"]);
   assert.deepEqual(body.reasoning, { effort: "xhigh" });
 });
+
+test("DeepSeek 推理强度按原值进入 Responses reasoning.effort", async () => {
+  const body = await buildRequestBody({
+    model: "deepseek-v4-pro-0813",
+    reasoningEffort: "max",
+    tools: [],
+    messages: [{ id: "m1", role: "user", source: { kind: "user" }, content: [{ type: "text", text: "hi" }] }],
+  }, {
+    id: "deepseek-v4-pro-0813",
+    input: ["text"],
+    reasoning: true,
+    reasoningEfforts: ["low", "high", "max"],
+    maxTokens: 32768,
+  }, undefined, []);
+  assert.deepEqual(body.reasoning, { effort: "max" });
+});

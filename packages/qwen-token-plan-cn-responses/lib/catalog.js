@@ -9,6 +9,7 @@ export const OFFICIAL_DOC_URLS = Object.freeze({
   tools: "https://platform.qianwenai.com/docs/token-plan/best-practices/built-in-tools.md",
   openclaw: "https://platform.qianwenai.com/docs/developer-guides/clients-and-developer-tools/openclaw.md",
   responses: "https://platform.qianwenai.com/docs/api-reference/chat/openai-responses.md",
+  chat: "https://platform.qianwenai.com/docs/api-reference/chat/openai-chat.md",
 });
 
 const TOOL_FROM_CN = Object.freeze({
@@ -20,25 +21,30 @@ const TOOL_FROM_CN = Object.freeze({
 });
 
 const BOOTSTRAP_MODELS = Object.freeze([
-  { id: "qwen3.8-max", reasoning: true, input: ["text", "image"], contextWindow: 983616, maxTokens: 131072,
+  { id: "qwen3.8-max", reasoning: true, reasoningEfforts: ["low", "medium", "xhigh"], defaultReasoningEffort: "xhigh", input: ["text", "image"], contextWindow: 983616, maxTokens: 131072,
     harnessTools: [...HARNESS_TOOL_TYPES] },
   { id: "qwen3.7-max", reasoning: false, input: ["text"], contextWindow: 1000000, maxTokens: 65536,
     harnessTools: ["web_search", "code_interpreter", "web_extractor"] },
   { id: "qwen3.7-plus", reasoning: false, input: ["text", "image"], contextWindow: 1000000, maxTokens: 65536,
     harnessTools: [...HARNESS_TOOL_TYPES] },
   { id: "qwen3.6-flash", reasoning: false, input: ["text", "image"], contextWindow: 1000000, maxTokens: 32768, harnessTools: [] },
-  { id: "glm-5.2", reasoning: false, input: ["text"], contextWindow: 1000000, maxTokens: 16384, harnessTools: [] },
-  { id: "deepseek-v4-pro", reasoning: false, input: ["text"], contextWindow: 163840, maxTokens: 32768, harnessTools: [] },
-  { id: "deepseek-v4-pro-0813", reasoning: false, input: ["text"], contextWindow: 163840, maxTokens: 32768, harnessTools: [] },
-  { id: "deepseek-v4-flash-0731", reasoning: false, input: ["text"], contextWindow: 1000000, maxTokens: 393216, harnessTools: [] },
+  { id: "glm-5.2", reasoning: true, reasoningEfforts: ["high", "max"], defaultReasoningEffort: "high", input: ["text"], contextWindow: 1000000, maxTokens: 16384, harnessTools: [] },
+  { id: "deepseek-v4-pro", reasoning: true, reasoningEfforts: ["high", "max"], defaultReasoningEffort: "high", input: ["text"], contextWindow: 163840, maxTokens: 32768, harnessTools: [] },
+  { id: "deepseek-v4-pro-0813", reasoning: true, reasoningEfforts: ["low", "high", "max"], defaultReasoningEffort: "high", input: ["text"], contextWindow: 163840, maxTokens: 32768, harnessTools: [] },
+  { id: "deepseek-v4-flash-0731", reasoning: true, reasoningEfforts: ["low", "high", "max"], defaultReasoningEffort: "high", input: ["text"], contextWindow: 1000000, maxTokens: 393216, harnessTools: [] },
 ]);
 
 export const BOOTSTRAP_CATALOG = Object.freeze({
-  version: 1,
+  version: 2,
   source: "embedded-bootstrap",
   syncedAt: "2026-08-20T00:00:00.000Z",
   fingerprint: "embedded-2026-08-20",
-  models: BOOTSTRAP_MODELS.map((model) => Object.freeze({ ...model, input: Object.freeze([...model.input]), harnessTools: Object.freeze([...model.harnessTools]) })),
+  models: BOOTSTRAP_MODELS.map((model) => Object.freeze({
+    ...model,
+    input: Object.freeze([...model.input]),
+    ...(model.reasoningEfforts ? { reasoningEfforts: Object.freeze([...model.reasoningEfforts]) } : {}),
+    harnessTools: Object.freeze([...model.harnessTools]),
+  })),
 });
 
 function section(markdown, heading, nextHeadingLevel = "##") {
@@ -109,6 +115,47 @@ export function parseOpenClawMetadata(markdown) {
   throw new Error("OpenClaw 文档中未找到个人版模型参数块");
 }
 
+const EFFORT_IDS = new Set(["none", "minimal", "low", "medium", "high", "xhigh", "max"]);
+
+function modelIds(text) {
+  return [...text.matchAll(/(?:deepseek|glm)-[a-z0-9.-]+/gi)].map((match) => match[0].toLowerCase());
+}
+
+/** Parse model-specific reasoning-effort profiles from the official Chat API reference. */
+export function parseReasoningProfiles(markdown) {
+  const start = markdown.indexOf("reasoning_effort:");
+  const end = markdown.indexOf("clear_thinking:", start + 1);
+  if (start < 0 || end < 0) throw new Error("Chat API 文档缺少 reasoning_effort 参数说明");
+  const lines = markdown.slice(start, end).split(/\r?\n/);
+  const result = new Map();
+
+  for (const line of lines) {
+    if (/Qwen3\.8-Max/i.test(line) && /可选值/.test(line)) {
+      result.set("qwen3.8-max", { efforts: ["low", "medium", "xhigh"], defaultEffort: "xhigh" });
+      continue;
+    }
+    if (/DeepSeek-V4 与 GLM 系列/i.test(line) && /适用于/.test(line)) {
+      for (const id of modelIds(line)) result.set(id, { efforts: ["high", "max"], defaultEffort: "high" });
+      continue;
+    }
+    if (/deepseek-v4-flash-0731/i.test(line) && /deepseek-v4-pro-0813/i.test(line) && /可选值/.test(line)) {
+      for (const id of modelIds(line.split("：**")[0])) {
+        result.set(id, { efforts: ["low", "high", "max"], defaultEffort: "high" });
+      }
+    }
+  }
+
+  for (const profile of result.values()) {
+    if (!profile.efforts.every((effort) => EFFORT_IDS.has(effort)) || !profile.efforts.includes(profile.defaultEffort)) {
+      throw new Error("Chat API 推理强度档位解析结果异常");
+    }
+  }
+  if (!result.has("qwen3.8-max") || !result.has("deepseek-v4-pro-0813")) {
+    throw new Error("Chat API 推理强度模型映射解析不完整");
+  }
+  return result;
+}
+
 export function parseHarnessCapabilities(markdown) {
   const personal = section(markdown, "### 个人版", "###");
   const rows = tableRows(personal);
@@ -129,7 +176,7 @@ function hashDocuments(documents) {
   return hash.digest("hex");
 }
 
-/** 将四份官方文档合并成一个可供 Adapter 原子读取的目录快照。 */
+/** 将五份官方文档合并成一个可供 Adapter 原子读取的目录快照。 */
 export function parseOfficialCatalog(documents, syncedAt = new Date().toISOString()) {
   for (const key of Object.keys(OFFICIAL_DOC_URLS)) {
     if (typeof documents[key] !== "string" || documents[key].length < 200) throw new Error(`官方文档 ${key} 内容异常`);
@@ -138,16 +185,22 @@ export function parseOfficialCatalog(documents, syncedAt = new Date().toISOStrin
   const responses = parseResponsesModels(documents.responses);
   const metadata = parseOpenClawMetadata(documents.openclaw);
   const harness = parseHarnessCapabilities(documents.tools);
+  const reasoningProfiles = parseReasoningProfiles(documents.chat);
   const bootstrap = new Map(BOOTSTRAP_MODELS.map((model) => [model.id, model]));
   const models = personal
     .filter((model) => responses.has(model.id))
     .map((entry) => {
       const meta = metadata.get(entry.id) ?? bootstrap.get(entry.id) ?? {};
+      const reasoningProfile = reasoningProfiles.get(entry.id);
       return {
         id: entry.id,
         brand: entry.brand,
         capabilities: entry.capabilities,
-        reasoning: meta.reasoning === true,
+        reasoning: Boolean(reasoningProfile),
+        ...(reasoningProfile ? {
+          reasoningEfforts: [...reasoningProfile.efforts],
+          defaultReasoningEffort: reasoningProfile.defaultEffort,
+        } : {}),
         input: meta.input?.length ? [...meta.input] : ["text"],
         ...(Number.isFinite(meta.contextWindow) ? { contextWindow: meta.contextWindow } : {}),
         ...(Number.isFinite(meta.maxTokens) ? { maxTokens: meta.maxTokens } : {}),
@@ -155,13 +208,13 @@ export function parseOfficialCatalog(documents, syncedAt = new Date().toISOStrin
       };
     });
   if (models.length < 2) throw new Error("个人版与 Responses API 支持模型交集异常");
-  return { version: 1, source: "official-docs", syncedAt, fingerprint: hashDocuments(documents), models };
+  return { version: 2, source: "official-docs", syncedAt, fingerprint: hashDocuments(documents), models };
 }
 
 async function readCache(cacheFile) {
   try {
     const parsed = JSON.parse(await readFile(cacheFile, "utf8"));
-    if (parsed?.version !== 1 || !Array.isArray(parsed?.catalog?.models) || parsed.catalog.models.length < 2) return undefined;
+    if (parsed?.version !== 2 || !Array.isArray(parsed?.catalog?.models) || parsed.catalog.models.length < 2) return undefined;
     return parsed;
   } catch { return undefined; }
 }
@@ -250,7 +303,7 @@ export class CatalogManager {
     const changed = catalog.fingerprint !== this.#catalog.fingerprint;
     this.#catalog = catalog;
     this.#sourceCache = nextSources;
-    await writeCache(this.cacheFile, { version: 1, catalog, sources: nextSources });
+    await writeCache(this.cacheFile, { version: 2, catalog, sources: nextSources });
     if (changed) this.onUpdate?.(catalog);
     this.logger.info?.(`qwen-token-plan-cn-responses: 官方目录已同步（${catalog.models.length} 个 Responses 模型，${catalog.syncedAt}）`);
     return catalog;

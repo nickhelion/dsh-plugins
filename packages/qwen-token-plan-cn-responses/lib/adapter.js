@@ -11,11 +11,17 @@ import { buildRequestBody } from "./content.js";
 import { describeHarnessTools, selectHarnessTools } from "./harness.js";
 import { responsesToDshChunks } from "./sse.js";
 
-const EFFORTS = Object.freeze([
-  { id: ReasoningEffortId("low"), name: "低" },
-  { id: ReasoningEffortId("medium"), name: "中" },
-  { id: ReasoningEffortId("xhigh"), name: "超高" },
-]);
+const EFFORT_NAMES = Object.freeze({ low: "低", medium: "中", high: "高", xhigh: "超高", max: "最大" });
+
+function reasoningInfo(model) {
+  const ids = model.reasoningEfforts ?? (model.reasoning ? ["low", "medium", "xhigh"] : []);
+  if (!ids.length) return undefined;
+  const defaultEffort = model.defaultReasoningEffort ?? ids.at(-1);
+  return {
+    efforts: ids.map((id) => ({ id: ReasoningEffortId(id), name: EFFORT_NAMES[id] ?? id })),
+    defaultEffort: ReasoningEffortId(defaultEffort),
+  };
+}
 
 function retryAfterMs(headers) {
   const raw = headers.get("retry-after");
@@ -38,11 +44,14 @@ function httpFailure(status, text) {
 
 function displayModel(provider, model, syncedAt) {
   const count = model.harnessTools.length;
+  const effortText = model.reasoningEfforts?.length
+    ? `${model.reasoningEfforts.join("/")}（默认 ${model.defaultReasoningEffort}）`
+    : "官方未列出可调档位";
   return {
     provider,
     id: model.id,
     name: count ? `${model.id}（内置工具 ${count} 项）` : `${model.id}（仅 DSH 工具）`,
-    description: `Responses API；内置工具：${describeHarnessTools(model.harnessTools)}；官方目录同步：${syncedAt}`,
+    description: `Responses API；推理强度：${effortText}；内置工具：${describeHarnessTools(model.harnessTools)}；官方目录同步：${syncedAt}`,
     inputModalities: [...model.input],
   };
 }
@@ -74,11 +83,12 @@ export class QwenTokenPlanResponsesAdapter extends LlmAdapter {
     const catalog = this.catalog.snapshot();
     const model = this.#model(modelId);
     if (!model) return { provider, id: modelId, name: modelId, description: "未出现在当前官方目录中；可尝试调用，但不注入内置工具", inputModalities: ["text"] };
+    const reasoning = reasoningInfo(model);
     return {
       ...displayModel(provider, model, catalog.syncedAt),
       ...(Number.isFinite(model.contextWindow) ? { context: { contextWindow: model.contextWindow } } : {}),
       ...(Number.isFinite(model.maxTokens) ? { defaultMaxTokens: model.maxTokens } : {}),
-      ...(model.reasoning ? { reasoning: { efforts: EFFORTS, defaultEffort: ReasoningEffortId("xhigh") } } : {}),
+      ...(reasoning ? { reasoning } : {}),
     };
   }
 

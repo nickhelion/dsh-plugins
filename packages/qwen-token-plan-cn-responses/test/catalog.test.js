@@ -13,6 +13,10 @@ test("官方目录按个人版与 Responses 交集组装，并独立读取工具
   assert.equal(catalog.models[0].harnessTools.length, 5);
   assert.equal(catalog.models[2].harnessTools.length, 0);
   assert.equal(catalog.models[0].contextWindow, 983616);
+  assert.deepEqual(catalog.models[0].reasoningEfforts, ["low", "medium", "xhigh"]);
+  assert.equal(catalog.models[0].defaultReasoningEffort, "xhigh");
+  assert.deepEqual(catalog.models[2].reasoningEfforts, ["low", "high", "max"]);
+  assert.equal(catalog.models[2].defaultReasoningEffort, "high");
 });
 
 test("CatalogManager 在网络失败时保留磁盘 last-known-good", async () => {
