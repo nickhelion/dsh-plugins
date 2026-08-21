@@ -10,7 +10,7 @@
 1. **目录不应在插件运行时抓文档。** 应由仓库里的定时 CI 每天读取官方文档和第一方 API，生成候选快照并开 PR；测试和人工审查通过后再发新版 npm 包。已安装的同一版本必须始终使用包内静态快照。
 2. Pi 扩展最终也选择了**静态、随版本发布的模型表**，而不是运行时发现；但它靠人工维护，且 2026-08-05 得出的“DeepSeek/GLM 不支持 Responses”在 2026-08-21 已过时。因此应借鉴其“静态运行时”结论，不应照搬其目录内容或纯人工流程。
 3. 官方 Responses schema 在传输层接受七个值：`none | minimal | low | medium | high | xhigh | max`，默认值写作 `xhigh`；但官方 Chat 文档又为部分模型给出了更窄的**语义档位及别名映射**。目录必须分别记录“线上接受值”和“对用户有意义的独立档位”，不能把“HTTP 200”自动解释为“独立推理强度”。
-4. 个人版当前八个文本模型中，除 `glm-5.2` 外，七档均被第一方 Responses 端点接受，`none` 确实关闭推理。`glm-5.2` 当前存在文档/实现冲突：显式 `high`、`xhigh`、`max` 均返回 HTTP 400；省略档位以及 `none`、`minimal`、`low`、`medium` 可调用。
+4. 个人版当前八个文本模型中，除 `glm-5.2` 外，七档均被第一方 Responses 端点接受，`none` 确实关闭推理。`glm-5.2` 当前存在**仅限 Responses 嵌套参数路径**的网关兼容问题：显式 `reasoning.effort=high/xhigh/max` 均返回 HTTP 400；`none/minimal/low/medium` 可调用。后续跨协议探测证明 Chat 与 Anthropic 端点可以传递 GLM 档位，因此不能把这个 400 解释成模型本身不支持推理强度。
 5. 给 DSH 模型选择器的稳妥策略：
    - Qwen 3.8：优先展示官方模型级语义档位 `low / medium / xhigh`，默认 `xhigh`；其余值虽被 Responses 接受，但模型级映射没有公开说明。
    - Qwen 3.7/3.6：Responses 七档均接受；官方只明确“默认开启思考”，未给这三个模型单独的 effort 映射。可以展示 Responses 的六个非关闭档位，但文案必须标注“Responses 通用档位”，不能伪造 token-budget 映射。
@@ -98,7 +98,29 @@ POST https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/response
 
 `glm-5.2` 三个失败值的错误一致：后端称 `thinking_budget` 必须为正整数且不得大于 131072。请求没有发送 `thinking_budget`，复测也没有发送 `max_output_tokens`，因此这是服务端将 Responses effort 转换为内部 budget 时的兼容性问题，而不是本插件拼包错误。
 
-### 2.3 `/models` 不能单独作为目录权威
+### 2.3 GLM-5.2 跨协议复测
+
+同日依据最新官方模型页、Chat API 与 Anthropic API 文档，对 Token Plan 个人版的同一个 `glm-5.2` 又做了协议分层探测。请求均为交互式短题，只记录状态、错误码、输出项类型与 token usage，不记录正文或凭据。
+
+| 协议与字段 | 实测可传值 | 实测拒绝值 | 结论 |
+|---|---|---|---|
+| Responses：`reasoning.effort` | `none/minimal/low/medium` | `high/xhigh/max` | 高三档被网关错误映射成超过 131072 的内部 budget |
+| OpenAI Chat：顶层 `reasoning_effort` | 七档全部 HTTP 200 | 非法枚举值 | `none` 实测关闭思考；模型级独立语义仍按官方映射收敛为关闭 / high / max |
+| Anthropic：`output_config.effort` | `low/medium/high/xhigh/max` | `none/minimal` 与非法枚举值 | 关闭思考应使用 `thinking.type=disabled`；其余值按官方别名映射 |
+
+附加边界结果：
+
+- Chat 的显式 `thinking_budget=4096` 成功，`131073` 被明确拒绝；由于 `max_completion_tokens` 还必须严格大于 budget 且自身最大值为 131072，当前网关的实际可用上界是 131071，`131072` 会撞到两个约束的交界错误。
+- Responses 虽然会接受未记录在该协议参考中的顶层 `enable_thinking` 与 `thinking_budget`，并且 `enable_thinking=false`、`thinking_budget=16/32` 实测生效，但官方思考指南明确称 Responses 暂不支持 `thinking_budget`。插件不能依赖这种未公开兼容行为。
+- Responses 顶层 `reasoning_effort` 请求也返回 HTTP 200，但 `none` 在中等推理题上仍产生了 reasoning，说明该字段不能作为可靠替代；正确的 Responses 标准字段仍是嵌套的 `reasoning.effort`。
+
+[智谱官方核心参数](https://docs.bigmodel.cn/cn/guide/start/concept-param) 解释了“七个可传枚举”和“独立语义档位”的差别：GLM-5.2 的 `none/minimal` 都关闭思考，`low/medium` 映射到 `high`，`xhigh` 映射到 `max`，默认 `max`。千问的通用 Chat/Anthropic 参考也把 GLM 收敛为 `high/max` 两个开启档位，但参数级默认值存在 `high` 与 `max` 的文档差异。因此目录应展示**关闭 / high / max**，并把默认值按具体协议记录，不能展示七个看似独立的强度。
+
+[阿里云 GLM-5.2 模型页](https://help.aliyun.com/zh/model-studio/glm-5-2) 当前列出的上下文长度、最大输出和最大思维链长度分别为 1048576、131072、131072。仓库中的 `maxTokens=16384` 目前是 DSH 请求的保守默认输出上限，不应误写成模型能力上限；若以后改名或拆字段，应分别表达“模型硬上限”和“插件默认请求上限”。
+
+对本插件的直接含义：当前保持 GLM-5.2 的 Responses 推理选择器隐藏是正确的止损措施。若要安全恢复 `关闭/high/max`，应为 GLM 增加协议级路由（Chat 或 Anthropic）并复用 DSH 工具，而不是把未公开的 Responses `thinking_budget` 当长期 API，或把 `minimal/low/medium` 冒充三个独立档位。
+
+### 2.4 `/models` 不能单独作为目录权威
 
 2026-08-21 实测 `GET /compatible-mode/v1/models` 已从 Pi 在 2026-08-05 观察到的 401 变为 HTTP 200，但返回的 11 个 ID 中没有 `deepseek-v4-pro-0813`；该模型却同时出现在个人版文档和 Responses 文档中，并且 POST 实测成功。
 
@@ -211,5 +233,8 @@ Pi 的 [`FULL_THINKING_LEVEL_MAP`](https://github.com/shamiao/pi-extension-qwen-
 - [OpenAI Responses API 参考](https://platform.qianwenai.com/docs/api-reference/chat/openai-responses)
 - [OpenAI Chat API 参考](https://platform.qianwenai.com/docs/api-reference/chat/openai-chat)
 - [思考模式指南](https://platform.qianwenai.com/docs/developer-guides/text-generation/thinking)
+- [Anthropic Messages API 参考](https://platform.qianwenai.com/docs/api-reference/chat/anthropic)
+- [GLM-5.2 模型信息（阿里云）](https://help.aliyun.com/zh/model-studio/glm-5-2)
+- [GLM 核心参数（智谱官方）](https://docs.bigmodel.cn/cn/guide/start/concept-param)
 - [Pi 包目录页](https://pi.dev/packages/pi-extension-qwen-token-plan-cn-ex?name=web&page=6)
 - [Pi 扩展源代码（固定提交）](https://github.com/shamiao/pi-extension-qwen-token-plan-cn-ex/tree/776d316648cf2858bfe3d38b9566f0c6f67b5a62)
