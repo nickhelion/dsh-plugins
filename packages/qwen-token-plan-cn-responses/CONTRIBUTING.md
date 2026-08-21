@@ -5,10 +5,10 @@ Contributions are welcome, especially fixtures for newly documented Qwen Respons
 ## Setup
 
 ```bash
-git clone https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses.git
-cd dsh-qwen-token-plan-cn-responses
+git clone https://github.com/nickhelion/dsh-plugins.git
+cd dsh-plugins
 npm ci
-npm run check
+npm run check --workspace dsh-qwen-token-plan-cn-responses
 ```
 
 Node.js 22.19 or newer is required to match current DeepSeek Harness releases.

@@ -1,4 +1,6 @@
-# AGENTS.md
+# AGENTS.md — ServerChan package
+
+The repository-root `AGENTS.md` and release/security rules also apply. This file adds package-specific runtime invariants.
 
 dsh-serverchan-notify — a DeepSeek Harness (DSH) cordis plugin that pushes a Server酱3 notification to WeChat whenever a top-level agent turn ends. Working on this repo: edit `lib/index.js`, verify with `npm test`, and use `npm run test:live` only for a manual end-to-end push.
 
@@ -27,7 +29,7 @@ These rules are load-bearing; do not "improve" them away:
 
 ## Deploying a change on a live machine
 
-1. `npm test` passes.
+1. From the monorepo root, `npm test --workspace dsh-serverchan-notify` passes.
 2. Restart the harness process so the loader re-reads the profile patch layer (a running DSH does not hot-load new plugin rows).
 
 ## Useful check

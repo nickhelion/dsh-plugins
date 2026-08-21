@@ -1,0 +1,26 @@
+{
+  "name": "dsh-plugins",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo for nickhelion's DeepSeek Harness plugins",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "check": "node scripts/run-workspaces.mjs check",
+    "test": "node scripts/run-workspaces.mjs test",
+    "pack:check": "node scripts/check-packages.mjs",
+    "security:scan": "node scripts/scan-local-secrets.mjs",
+    "release": "node scripts/release.mjs"
+  },
+  "engines": {
+    "node": ">=22.19"
+  },
+  "packageManager": "npm@11.17.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickhelion/dsh-plugins.git"
+  },
+  "license": "MIT"
+}

@@ -8,6 +8,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-43853d.svg)](#requirements)
+[![npm version](https://img.shields.io/npm/v/dsh-serverchan-notify.svg)](https://www.npmjs.com/package/dsh-serverchan-notify)
+[![CI](https://github.com/nickhelion/dsh-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/nickhelion/dsh-plugins/actions/workflows/ci.yml)
 [![DSH plugin](https://img.shields.io/badge/DSH-plugin-4b32c3.svg)](https://github.com/topics/dsh-plugin)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
@@ -71,18 +73,21 @@ Plugin rows are only resolved at boot — **restart the harness process** after 
 
 ## Installing the package
 
-The package declares a `dsh.bundle` manifest, so it installs with one command (from GitHub until it is on npm):
+The package declares a `dsh.bundle` manifest, so npm installation is one command:
 
 ```bash
-# install into a profile (github spec — works without an npm publish)
-dsh plugin --profile web add github:nickhelion/dsh-serverchan-notify
+# recommended
+dsh plugin --profile web add dsh-serverchan-notify
 
-# npm (once published)
-cd ~/.dsh/profiles && pnpm add dsh-serverchan-notify
+# fixed version
+dsh plugin --profile web add dsh-serverchan-notify@1.0.1
 
-# manual: clone + symlink into the profile's module tree
-git clone https://github.com/nickhelion/dsh-serverchan-notify
-ln -s "$(pwd)/dsh-serverchan-notify" ~/.dsh/profiles/node_modules/dsh-serverchan-notify
+# GitHub monorepo fallback
+dsh plugin --profile web add 'github:nickhelion/dsh-plugins#main&path:/packages/serverchan-notify'
+
+# local development
+git clone https://github.com/nickhelion/dsh-plugins.git
+dsh plugin --profile web add "$PWD/dsh-plugins/packages/serverchan-notify"
 ```
 
 The bundled `cordis.patch.yml` inserts the plugin row with all-default config; override any option by addressing the row id `serverchan-notify` from your own patch layer.
@@ -159,7 +164,7 @@ README.zh-CN.md   中文文档
 
 ## Contributing
 
-PRs welcome. Two ground rules:
+PRs are accepted in the canonical [`nickhelion/dsh-plugins`](https://github.com/nickhelion/dsh-plugins) monorepo. Two ground rules:
 
 1. **Never commit a SendKey** (or any absolute machine path) — keys flow through env / file / config only.
 2. The event listener must stay **non-throwing and fire-and-forget** — a notification must never affect the harness.

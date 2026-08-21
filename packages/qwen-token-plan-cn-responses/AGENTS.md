@@ -1,6 +1,7 @@
-# Agent Guide
+# Agent Guide — Qwen provider
 
-This file applies to the whole repository. Read it before editing.
+This file adds package-specific rules for `packages/qwen-token-plan-cn-responses`.
+The monorepo root `AGENTS.md` still applies and takes precedence.
 
 ## Mission
 
@@ -21,11 +22,13 @@ Expose Qwen Token Plan CN Personal models to DeepSeek Harness through a dedicate
 
 ## Required commands
 
+From the monorepo root:
+
 ```bash
 npm ci
-npm run check
-npm run test:live-catalog  # optional network check; never run in deterministic CI
-npm pack --dry-run
+npm run check --workspace dsh-qwen-token-plan-cn-responses
+npm run test:live-catalog --workspace dsh-qwen-token-plan-cn-responses  # optional network check
+npm run pack:check
 ```
 
 ## Non-negotiable invariants
@@ -50,4 +53,4 @@ Prefer the machine-readable `.md` endpoints documented in `docs/CATALOG-SYNC.md`
 - Keep seams narrow: source fetching is replaceable in tests; parsing functions remain pure; the Cordis composition root only wires dependencies.
 - Update README's current matrix when publishing a release, but never turn that table into runtime authority.
 - When a new model appears without OpenClaw metadata, advertise it without invented context/output capacities rather than guessing.
-- Run the exact-secret scan described in `SECURITY.md` before making a repository public.
+- Run `npm run security:scan` and the tarball audit before publishing.

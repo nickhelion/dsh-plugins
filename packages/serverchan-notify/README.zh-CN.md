@@ -8,6 +8,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node ≥ 18](https://img.shields.io/badge/Node-%E2%89%A518-43853d.svg)](#环境要求)
+[![npm version](https://img.shields.io/npm/v/dsh-serverchan-notify.svg)](https://www.npmjs.com/package/dsh-serverchan-notify)
+[![CI](https://github.com/nickhelion/dsh-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/nickhelion/dsh-plugins/actions/workflows/ci.yml)
 [![DSH plugin](https://img.shields.io/badge/DSH-plugin-4b32c3.svg)](https://github.com/topics/dsh-plugin)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#参与贡献)
 
@@ -71,18 +73,21 @@ chmod 600 ~/.dsh/secrets/serverchan_sendkey
 
 ## 安装插件包
 
-本包声明了 `dsh.bundle` manifest，一条命令即可安装（未上 npm 前用 github 协议）：
+本包声明了 `dsh.bundle` manifest，通过 npm 一条命令安装：
 
 ```bash
-# 安装到某个 profile（github 协议，无需 npm 发布）
-dsh plugin --profile web add github:nickhelion/dsh-serverchan-notify
+# 推荐
+dsh plugin --profile web add dsh-serverchan-notify
 
-# npm（发布后）
-cd ~/.dsh/profiles && pnpm add dsh-serverchan-notify
+# 固定版本
+dsh plugin --profile web add dsh-serverchan-notify@1.0.1
 
-# 手动：clone + 软链进 profile 的模块目录
-git clone https://github.com/nickhelion/dsh-serverchan-notify
-ln -s "$(pwd)/dsh-serverchan-notify" ~/.dsh/profiles/node_modules/dsh-serverchan-notify
+# GitHub monorepo 回退
+dsh plugin --profile web add 'github:nickhelion/dsh-plugins#main&path:/packages/serverchan-notify'
+
+# 本地开发
+git clone https://github.com/nickhelion/dsh-plugins.git
+dsh plugin --profile web add "$PWD/dsh-plugins/packages/serverchan-notify"
 ```
 
 包内自带的 `cordis.patch.yml` 以全默认配置插入插件行；如需覆盖某个选项，在自己的补丁层里按行 id `serverchan-notify` 重写即可。
@@ -159,7 +164,7 @@ README.zh-CN.md   中文文档
 
 ## 参与贡献
 
-欢迎 PR。两条底线规则：
+请向统一的 [`nickhelion/dsh-plugins`](https://github.com/nickhelion/dsh-plugins) monorepo 提交 PR。两条底线规则：
 
 1. **绝不提交 SendKey**（或任何机器绝对路径）——key 只能经环境变量 / 文件 / 配置进入。
 2. 事件监听器必须保持**不抛异常、fire-and-forget**——通知绝不能影响 harness 主流程。

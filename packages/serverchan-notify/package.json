@@ -1,6 +1,6 @@
 {
   "name": "dsh-serverchan-notify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DeepSeek Harness plugin: push a ServerChan3 (Server酱) notification whenever an agent turn finishes an answer — codex Stop-hook parity",
   "type": "module",
   "main": "lib/index.js",
@@ -9,14 +9,21 @@
     ".": {
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",
     "cordis.patch.yml",
     "README.md",
     "README.zh-CN.md",
-    "LICENSE"
+    "LICENSE",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "smoke-test.mjs",
+    "test-send.mjs"
   ],
   "dsh": {
     "bundle": {
@@ -24,14 +31,16 @@
     }
   },
   "scripts": {
+    "check": "node --check lib/index.js && node smoke-test.mjs",
     "test": "node smoke-test.mjs",
     "test:live": "node test-send.mjs",
-    "prepack": "npm test"
+    "prepack": "node smoke-test.mjs"
   },
   "sideEffects": false,
   "keywords": [
     "deepseek-harness",
     "dsh",
+    "dsh-plugin",
     "cordis",
     "serverchan",
     "serverchan3",
@@ -41,14 +50,16 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nickhelion/dsh-serverchan-notify.git"
+    "url": "git+https://github.com/nickhelion/dsh-plugins.git",
+    "directory": "packages/serverchan-notify"
   },
-  "homepage": "https://github.com/nickhelion/dsh-serverchan-notify#readme",
+  "homepage": "https://github.com/nickhelion/dsh-plugins/tree/main/packages/serverchan-notify#readme",
   "bugs": {
-    "url": "https://github.com/nickhelion/dsh-serverchan-notify/issues"
+    "url": "https://github.com/nickhelion/dsh-plugins/issues"
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "license": "MIT",
   "engines": {

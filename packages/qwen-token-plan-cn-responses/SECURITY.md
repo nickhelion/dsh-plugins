@@ -2,7 +2,7 @@
 
 ## Reporting
 
-Please report vulnerabilities through GitHub's private **Report a vulnerability** flow for this repository. Do not include live credentials in a public issue.
+Please report vulnerabilities through the monorepo's private **Report a vulnerability** flow. Do not include live credentials in a public issue.
 
 ## Secret-handling design
 
@@ -15,7 +15,7 @@ Please report vulnerabilities through GitHub's private **Report a vulnerability*
 
 ## Pre-publication check
 
-Before publishing from a configured workstation, compare every tracked file against the exact local secret without printing the secret, then scan common token patterns and the full Git history. Also inspect `npm pack --dry-run` so credential files and caches cannot enter a package tarball.
+Before publishing from a configured workstation, run `npm run security:scan` from the monorepo root. It compares current files and the full Git history against known local credentials without printing them. Also run `npm run pack:check` so credential files and caches cannot enter a package tarball.
 
 ## Supported versions
 

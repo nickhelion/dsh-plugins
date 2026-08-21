@@ -1,0 +1,56 @@
+name: Publish npm packages
+
+on:
+  push:
+    tags:
+      - "qwen-token-plan-cn-responses-v*"
+      - "serverchan-notify-v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+      - name: Use an OIDC-capable npm CLI
+        run: npm install --global npm@latest
+      - name: Select and validate tagged package
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          case "$tag" in
+            qwen-token-plan-cn-responses-v*)
+              workspace="dsh-qwen-token-plan-cn-responses"
+              directory="packages/qwen-token-plan-cn-responses"
+              version="${tag#qwen-token-plan-cn-responses-v}"
+              ;;
+            serverchan-notify-v*)
+              workspace="dsh-serverchan-notify"
+              directory="packages/serverchan-notify"
+              version="${tag#serverchan-notify-v}"
+              ;;
+            *) echo "unsupported release tag: $tag" >&2; exit 1 ;;
+          esac
+          actual="$(node -p "require('./$directory/package.json').version")"
+          test "$actual" = "$version" || { echo "tag=$version package=$actual" >&2; exit 1; }
+          echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - run: npm ci --ignore-scripts
+      - run: npm run check --workspace "${{ steps.package.outputs.workspace }}"
+      - run: npm run pack:check
+      - name: Publish with npm Trusted Publishing
+        run: npm publish --workspace "${{ steps.package.outputs.workspace }}" --access public

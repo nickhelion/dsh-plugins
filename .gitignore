@@ -1,3 +1,5 @@
 node_modules/
 *.tgz
 coverage/
+.npmrc.local
+npm-debug.log*

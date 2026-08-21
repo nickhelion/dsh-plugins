@@ -9,13 +9,28 @@ permissions:
 
 jobs:
   test:
+    strategy:
+      matrix:
+        node: ["22.19", "24"]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22.19"
+          node-version: ${{ matrix.node }}
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run check
-      - run: npm pack --dry-run
+      - run: npm run pack:check
+
+  serverchan-node18:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+      - working-directory: packages/serverchan-notify
+        run: npm install --ignore-scripts
+      - working-directory: packages/serverchan-notify
+        run: npm test

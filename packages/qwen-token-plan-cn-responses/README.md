@@ -1,9 +1,9 @@
 # DSH Qwen Token Plan CN Responses
 
-[![CI](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/actions/workflows/ci.yml/badge.svg)](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/actions/workflows/ci.yml)
+[![CI](https://github.com/nickhelion/dsh-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/nickhelion/dsh-plugins/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/dsh-qwen-token-plan-cn-responses.svg)](https://www.npmjs.com/package/dsh-qwen-token-plan-cn-responses)
 [![npm downloads](https://img.shields.io/npm/dm/dsh-qwen-token-plan-cn-responses.svg)](https://www.npmjs.com/package/dsh-qwen-token-plan-cn-responses)
-[![GitHub stars](https://img.shields.io/github/stars/nickhelion/dsh-qwen-token-plan-cn-responses?style=flat)](https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/nickhelion/dsh-plugins?style=flat)](https://github.com/nickhelion/dsh-plugins/stargazers)
 [![Listed in Awesome DSH Plugins](https://img.shields.io/badge/listed-Awesome%20DSH%20Plugins-4c1)](https://github.com/vvlife/awesome-deepseek-harness-plugins#integrations--bridges)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 22.19+](https://img.shields.io/badge/Node.js-22.19%2B-339933)](https://nodejs.org/)
@@ -112,22 +112,22 @@ dsh plugin --profile web remove dsh-qwen-token-plan-cn-responses
 生产环境建议固定版本：
 
 ```bash
-dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.1
+dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.2
 ```
 
 也可直接安装 GitHub 分支或 commit：
 
 ```bash
-dsh plugin --profile web add github:nickhelion/dsh-qwen-token-plan-cn-responses#main
+dsh plugin --profile web add 'github:nickhelion/dsh-plugins#main&path:/packages/qwen-token-plan-cn-responses'
 ```
 
 如需本地开发安装：
 
 ```bash
-git clone https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses.git
-cd dsh-qwen-token-plan-cn-responses
+git clone https://github.com/nickhelion/dsh-plugins.git
+cd dsh-plugins
 npm install
-dsh plugin --profile web add "$PWD"
+dsh plugin --profile web add "$PWD/packages/qwen-token-plan-cn-responses"
 ```
 
 ## 凭据：只保存一次

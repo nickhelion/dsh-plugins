@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-21
+
+### Changed
+
+- Moved the canonical source into the `nickhelion/dsh-plugins` monorepo without changing the npm name or DSH provider id.
+- Added shared CI, package-content auditing, and npm Trusted Publishing documentation.
+
 ## [0.1.1] - 2026-08-20
 
 ### Added
@@ -22,6 +29,7 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/compare/v0.1.1...HEAD
-[0.1.1]: https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/releases/tag/v0.1.1
-[0.1.0]: https://github.com/nickhelion/dsh-qwen-token-plan-cn-responses/releases/tag/v0.1.0
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.2...HEAD
+[0.1.2]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.2
+[0.1.1]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.1
+[0.1.0]: https://github.com/nickhelion/dsh-plugins/releases/tag/v0.1.0
