@@ -18,6 +18,20 @@
 
 插件可分别安装、升级和卸载；安装一个不会隐式启用另一个。
 
+### Server酱通知 · `dsh-serverchan-notify`
+
+在 DSH 里跑 agent 时，`dsh-serverchan-notify` 会在每个顶层回合结束后，通过 Server酱3（ServerChan3）发一条微信通知到手机，无论正常完成、报错、被拦截还是超时都会通知。消息里带上对话标题、模型、项目目录、回合状态和最新回复摘要，人离开电脑也能知道「这轮跑完了」。安装只要一条命令，再填一个 SendKey、挂一行 patch，配置很轻。推送是 fire-and-forget，失败只写一条日志，不会阻塞 agent 主循环。详见[包文档](packages/serverchan-notify/README.zh-CN.md)。
+
+### 千问 Token Plan 提供方 · `dsh-qwen-token-plan-cn-responses`
+
+`dsh-qwen-token-plan-cn-responses` 是千问 Token Plan 个人版在 DSH 里的一个长期维护提供方，维护者自己也每天在用。DSH 自带的「Qwen Token Plan 个人版（官方）」来自 Pi，走 Chat Completions，因此用不了官方的内置工具，比如 web_search 和 code_interpreter；它的模型目录也是静态维护的，上下文窗口、推理强度经常和实际情况对不上。这个插件改走 Responses API，原生支持工具调用，模型目录每天按官方文档同步，并逐个模型标注真实的上下文窗口和推理强度。像 qwen3.8-max、deepseek-v4-pro 这类模型更新进来后，也能更快在选择器里看到准确配置。
+
+![模型选择器：插件新增的「Qwen Token Plan 个人版」提供方](docs/images/qwen-model-selector.png)
+
+![模型列表：逐模型标注协议与内置工具能力，如 `Responses · 5 个内置工具`](docs/images/qwen-model-list.png)
+
+详见[包文档](packages/qwen-token-plan-cn-responses/README.md)。
+
 ## 人类快速开始
 
 ```bash

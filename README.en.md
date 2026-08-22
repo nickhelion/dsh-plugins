@@ -18,6 +18,20 @@ A community-plugin monorepo for [DeepSeek Harness](https://github.com/deepseek-a
 
 Each package installs independently. Installing one never silently enables the other.
 
+### ServerChan notifications · `dsh-serverchan-notify`
+
+`dsh-serverchan-notify` sends a WeChat notification through ServerChan3 (Server酱3) whenever a top-level DSH agent turn ends, whether it completed, failed, was blocked, or timed out. The message includes the conversation title, model, project directory, turn status, and a summary of the latest reply, so you can step away and still know when the run is done. Setup is deliberately small: install it with one command, add a SendKey, and apply a one-line patch. Delivery is fire-and-forget; a failed push writes one log entry and never blocks the agent loop. See [package docs](packages/serverchan-notify/README.md).
+
+### Qwen Token Plan provider · `dsh-qwen-token-plan-cn-responses`
+
+`dsh-qwen-token-plan-cn-responses` is a maintained DSH provider for the personal Qwen Token Plan, and it is also the one the maintainer uses every day. DSH's built-in provider, shown as "Qwen Token Plan 个人版（官方）" and inherited from Pi, uses Chat Completions, so official built-in tools such as web_search and code_interpreter cannot be triggered; its model catalog is manually maintained as well, and the context window and reasoning-effort metadata often drift from reality. This plugin uses the Responses API for native tool calling, syncs its model catalog with the official documentation every day, and records the actual context window and reasoning effort for each model. That also means models such as qwen3.8-max and deepseek-v4-pro can appear in the selector with accurate settings sooner.
+
+![Model selector: the plugin's new "Qwen Token Plan 个人版" provider](docs/images/qwen-model-selector.png)
+
+![Model list: per-model protocol and built-in tool annotations](docs/images/qwen-model-list.png)
+
+See [package docs](packages/qwen-token-plan-cn-responses/README.md).
+
 ## Human quick start
 
 ```bash
