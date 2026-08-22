@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-08-22
+
+### Changed
+
+- Add peer compatibility with the DeepSeek Harness `0.1.1-rc.x` line and run development checks against `0.1.1-rc.2`, while retaining support for `0.1.0-rc.x`.
+
 ## [0.1.6] - 2026-08-21
 
 ### Changed
@@ -61,7 +67,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.6...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.7...HEAD
+[0.1.7]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.7
 [0.1.6]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.6
 [0.1.5]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.5
 [0.1.4]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.4
