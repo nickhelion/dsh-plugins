@@ -38,3 +38,26 @@ test("运行时目录是随版本发布的只读快照", () => {
   assert.equal(glm.defaultReasoningEffort, "high");
   assert.deepEqual(glm.rejectedReasoningEfforts, []);
 });
+
+test("内容指纹只随语义内容变化：syncedAt 与纯文档措辞改动不改变指纹", () => {
+  const base = parseOfficialCatalog(DOCS, "2026-08-20T00:00:00.000Z", probes);
+  // 不同的同步时间不改变指纹。
+  const later = parseOfficialCatalog(DOCS, "2026-08-21T00:00:00.000Z", probes);
+  assert.equal(later.fingerprint, base.fingerprint);
+  // 官方文档里与目录无关的措辞改动不改变指纹。
+  const cosmetic = parseOfficialCatalog(
+    { ...DOCS, personal: DOCS.personal.replace("这里是用于测试的官方文档摘录", "这里是用于测试的官方文档摘录，新增一句与模型无关的说明") },
+    "2026-08-20T00:00:00.000Z",
+    probes,
+  );
+  assert.equal(cosmetic.fingerprint, base.fingerprint);
+  assert.deepEqual(cosmetic.models, base.models);
+  // 新增一个模型会改变指纹并进入交集。
+  const substantive = parseOfficialCatalog(
+    { ...DOCS, personal: DOCS.personal.replace("| 千问 | qwen3.7-max | 推理模型、文本生成 |", "| 千问 | qwen3.7-max | 推理模型、文本生成 |\n| 千问 | qwen3.6-flash | 推理模型、文本生成 |") },
+    "2026-08-20T00:00:00.000Z",
+    probes,
+  );
+  assert.notEqual(substantive.fingerprint, base.fingerprint);
+  assert.ok(substantive.models.some((model) => model.id === "qwen3.6-flash"));
+});

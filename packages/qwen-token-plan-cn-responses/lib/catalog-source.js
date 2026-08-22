@@ -151,9 +151,19 @@ export function parseHarnessCapabilities(markdown) {
   return result;
 }
 
-function hashDocuments(documents) {
+/**
+ * 目录语义内容指纹：仅对除 syncedAt/fingerprint 外的快照语义内容求 SHA-256。
+ * 指纹只随编译后的目录实质变化（模型、工具、推理档位、probe 证据、schema 版本）而变化；
+ * 官方文档里与目录无关的纯措辞改动不会改变指纹，因此不会触发版本发布。
+ */
+export function contentFingerprint(value) {
   const hash = createHash("sha256");
-  for (const key of Object.keys(OFFICIAL_DOC_URLS)) hash.update(key).update("\0").update(documents[key]).update("\0");
+  hash.update(JSON.stringify({
+    version: value?.version,
+    source: value?.source,
+    reasoningProbedAt: value?.reasoningProbedAt,
+    models: value?.models,
+  }));
   return hash.digest("hex");
 }
 
@@ -209,12 +219,12 @@ export function parseOfficialCatalog(documents, syncedAt = new Date().toISOStrin
       };
     });
   if (models.length < 2) throw new Error("个人版与 Responses API 支持模型交集异常");
-  return {
+  const catalog = {
     version: 3,
     source: reasoningProbes ? "official-docs+verified-probes" : "official-docs",
     syncedAt,
-    fingerprint: hashDocuments(documents),
     ...(reasoningProbes?.testedAt ? { reasoningProbedAt: reasoningProbes.testedAt } : {}),
     models,
   };
+  return { ...catalog, fingerprint: contentFingerprint(catalog) };
 }

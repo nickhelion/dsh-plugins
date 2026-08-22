@@ -25,14 +25,14 @@ The maintainer sync reads five machine-readable official Markdown documents:
 5. Parse documented reasoning profiles, then apply reviewed Responses-probe overrides. Semantic UI efforts and accepted wire values remain distinct.
 6. Attach server-side tools only from the Harness document's **个人版** table.
 7. Reject the whole candidate if any source or critical parse is incomplete.
-8. Compare the candidate with `lib/catalog.snapshot.json`; do nothing when identical.
+8. Compare the candidate's *semantic content* with `lib/catalog.snapshot.json`; do nothing when identical. `fingerprint` is the SHA-256 of that semantic content (schema version, source, probe timestamp and the compiled models), so it changes exactly when the compiled catalog changes — never on `syncedAt` or on editorial-only edits to the official documents.
 
 ## Daily pull-request workflow
 
 `.github/workflows/catalog-sync.yml` runs daily and on manual dispatch:
 
 1. Fetch and compile the public documents with `npm run catalog:sync --workspace dsh-qwen-token-plan-cn-responses`.
-2. If the snapshot changed, prepare a patch version, changelog entry, README pin and root lockfile.
+2. If the compiled semantic catalog changed, prepare a patch version, changelog entry, README pin and root lockfile. Editorial-only documentation changes that leave the compiled catalog identical do not open a pull request; the next substantive change carries a fresh fingerprint.
 3. Run deterministic tests and the npm tarball audit.
 4. Force-update the automation-owned branch and open or refresh one pull request.
 5. Require review. New models or reasoning changes must be checked with the local, credential-safe `reasoning:probe` command before merge.

@@ -30,6 +30,8 @@ let previous;
 try { previous = JSON.parse(await readFile(snapshotFile, "utf8")); } catch {}
 
 const candidate = parseOfficialCatalog(documents, previous?.syncedAt ?? new Date().toISOString(), probes);
+// 变更判定只看编译后的语义内容（fingerprint 现在是语义内容的 SHA-256），排除 syncedAt：
+// 官方文档的纯措辞/格式编辑若不改变编译结果，不触发快照更新与版本发布。
 const comparable = (value) => JSON.stringify({
   version: value?.version,
   source: value?.source,
