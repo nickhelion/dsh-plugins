@@ -26,9 +26,9 @@
 
 `dsh-qwen-token-plan-cn-responses` 是千问 Token Plan 个人版在 DSH 里的一个长期维护提供方，维护者自己也每天在用。DSH 自带的「Qwen Token Plan 个人版（官方）」来自 Pi，走 Chat Completions，因此用不了官方的内置工具，比如 web_search 和 code_interpreter；它的模型目录也是静态维护的，上下文窗口、推理强度经常和实际情况对不上。这个插件改走 Responses API，原生支持工具调用，模型目录每天按官方文档同步，并逐个模型标注真实的上下文窗口和推理强度。像 qwen3.8-max、deepseek-v4-pro 这类模型更新进来后，也能更快在选择器里看到准确配置。
 
-![模型选择器：插件新增的「Qwen Token Plan 个人版」提供方](docs/images/qwen-model-selector.png)
-
-![模型列表：逐模型标注协议与内置工具能力，如 `Responses · 5 个内置工具`](docs/images/qwen-model-list.png)
+<div align="center">
+  <img src="docs/images/qwen-model-list.png" width="250" alt="模型列表：逐模型标注协议与内置工具能力" />
+</div>
 
 详见[包文档](packages/qwen-token-plan-cn-responses/README.md)。
 
