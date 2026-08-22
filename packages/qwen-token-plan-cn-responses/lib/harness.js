@@ -17,6 +17,22 @@ export const HARNESS_TOOL_LABELS = Object.freeze({
   image_search: "以图搜图",
 });
 
+/** 单条服务端工具活动的 emoji 徽标，与中文粗体标签联合渲染为可扫描标题行。 */
+const HARNESS_TOOL_BADGES = Object.freeze({
+  web_search: "🔎",
+  code_interpreter: "🧮",
+  web_extractor: "📄",
+  web_search_image: "🔍",
+  image_search: "🖼️",
+});
+
+/** 统一标题行：`**{emoji} {中文标签}（千问内置）**`，明确来源为服务端内置工具。 */
+function badgeLabel(type, fallbackType) {
+  const emoji = HARNESS_TOOL_BADGES[type] ?? "⚙️";
+  const label = HARNESS_TOOL_LABELS[type] ?? fallbackType ?? type ?? "未知工具";
+  return `**${emoji} ${label}（千问内置）**`;
+}
+
 const KNOWN = new Set(HARNESS_TOOL_TYPES);
 
 /** 将插件配置归一化为 auto / none / 显式列表。 */
@@ -52,59 +68,62 @@ function stringArray(value) {
   return Array.isArray(value) ? value.map(String).filter(Boolean) : [];
 }
 
-/** 将服务端工具活动渲染为可持久化、可在 DSH UI 看见的简洁 Markdown。 */
+/**
+ * 将单条服务端工具活动（一次 output_item）渲染为独立、自解释、可在 DSH UI 看见的简洁 Markdown。
+ * 只保留理解回答出处所需的字段，均经长度限制；不暗示拿到服务端未返回的正文或内部结果。
+ */
+export function formatHarnessEntry(entry) {
+  const data = entry?.data && typeof entry.data === "object" ? entry.data : {};
+  const action = data.action && typeof data.action === "object" ? data.action : {};
+  switch (entry?.type) {
+    case "web_search_call": {
+      const queries = stringArray(action.queries);
+      const sources = Array.isArray(action.sources) ? action.sources : [];
+      const urls = sources
+        .map((source) => source && typeof source === "object" ? String(source.url ?? "") : "")
+        .filter(Boolean);
+      const lines = [`${badgeLabel("web_search")}${queries.length ? ` · ${queries.map((q) => clip(q, 120)).join("、")}` : ""}`];
+      if (urls.length) lines.push(...urls.map((url) => `- ${clip(url, 300)}`));
+      return lines.join("\n");
+    }
+    case "code_interpreter_call": {
+      const lines = [`${badgeLabel("code_interpreter")} · 已执行`];
+      if (typeof data.code === "string" && data.code.trim()) lines.push(`\`\`\`python\n${clip(data.code)}\n\`\`\``);
+      const logs = (Array.isArray(data.outputs) ? data.outputs : [])
+        .filter((item) => item && typeof item === "object" && item.type === "logs")
+        .map((item) => clip(item.logs))
+        .filter(Boolean);
+      if (logs.length) lines.push(...logs);
+      return lines.join("\n");
+    }
+    case "web_extractor_call": {
+      const lines = [`${badgeLabel("web_extractor")}${data.goal ? ` · ${clip(data.goal, 200)}` : ""}`];
+      lines.push(...stringArray(data.urls).map((url) => `- ${clip(url, 300)}`));
+      return lines.join("\n");
+    }
+    case "web_search_image_call":
+    case "image_search_call": {
+      const label = entry.type === "web_search_image_call" ? "🔍 文搜图" : "🖼️ 以图搜图";
+      const isError = data.error != null && String(data.error).trim() !== "";
+      let count;
+      let output = data.output;
+      if (typeof output === "string") {
+        try { output = JSON.parse(output); } catch { /* 只影响显示计数 */ }
+      }
+      if (Array.isArray(output)) count = output.length;
+      else if (output && typeof output === "object" && Array.isArray(output.images)) count = output.images.length;
+      const suffix = isError ? " · 调用失败" : count == null ? " · 已调用" : ` · 返回 ${count} 张图片`;
+      return `**${label}（千问内置）**${suffix}`;
+    }
+    default:
+      return `${badgeLabel(undefined, String(entry?.type ?? "未知"))} · 已调用`;
+  }
+}
+
+/** 将服务端工具活动渲染为可持久化、可在 DSH UI 看见的简洁 Markdown（流末兜底聚合形式）。 */
 export function formatHarnessActivity(activity) {
   if (!Array.isArray(activity) || activity.length === 0) return "";
-  const parts = [];
-  for (const entry of activity) {
-    const data = entry.data && typeof entry.data === "object" ? entry.data : {};
-    const action = data.action && typeof data.action === "object" ? data.action : {};
-    switch (entry.type) {
-      case "web_search_call": {
-        const queries = stringArray(action.queries);
-        const sources = Array.isArray(action.sources) ? action.sources : [];
-        const urls = sources
-          .map((source) => source && typeof source === "object" ? String(source.url ?? "") : "")
-          .filter(Boolean);
-        const lines = [`[内置工具：联网搜索]${queries.length ? ` ${queries.map((q) => JSON.stringify(q)).join("、")}` : ""}`];
-        if (urls.length) lines.push(...urls.map((url) => `- ${url}`));
-        parts.push(lines.join("\n"));
-        break;
-      }
-      case "code_interpreter_call": {
-        const lines = ["[内置工具：代码解释器] 已执行"];
-        if (typeof data.code === "string" && data.code.trim()) lines.push(`\`\`\`python\n${clip(data.code)}\n\`\`\``);
-        const logs = (Array.isArray(data.outputs) ? data.outputs : [])
-          .filter((item) => item && typeof item === "object" && item.type === "logs")
-          .map((item) => clip(item.logs))
-          .filter(Boolean);
-        if (logs.length) lines.push(logs.join("\n"));
-        parts.push(lines.join("\n"));
-        break;
-      }
-      case "web_extractor_call": {
-        const lines = [`[内置工具：网页抓取]${data.goal ? ` ${clip(data.goal, 200)}` : ""}`];
-        lines.push(...stringArray(data.urls).map((url) => `- ${url}`));
-        parts.push(lines.join("\n"));
-        break;
-      }
-      case "web_search_image_call":
-      case "image_search_call": {
-        const label = entry.type === "web_search_image_call" ? "文搜图" : "以图搜图";
-        let count;
-        let output = data.output;
-        if (typeof output === "string") {
-          try { output = JSON.parse(output); } catch { /* 只影响显示计数 */ }
-        }
-        if (Array.isArray(output)) count = output.length;
-        else if (output && typeof output === "object" && Array.isArray(output.images)) count = output.images.length;
-        parts.push(`[内置工具：${label}]${count == null ? " 已调用" : ` 返回 ${count} 张图片`}`);
-        break;
-      }
-      default:
-        parts.push(`[内置工具：${entry.type}] 已调用`);
-    }
-  }
+  const parts = activity.map((entry) => formatHarnessEntry(entry)).filter(Boolean);
   return `\n\n---\n${parts.join("\n\n")}`;
 }
 
