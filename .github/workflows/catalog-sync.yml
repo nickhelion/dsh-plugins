@@ -70,3 +70,4 @@ jobs:
               --base main \
               --title "chore(qwen): refresh official catalog" \
               --body "Daily official-document sync detected a catalog change. The PR contains a release-versioned static snapshot and patch bump; plugin runtime does not fetch documentation. CI passed in workflow run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. If reasoning metadata changed or a model was added, run the local reasoning probe before merge. Merging publishes the prepared patch through npm Trusted Publishing."
+          fi
