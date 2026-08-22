@@ -1,8 +1,8 @@
 {
   "version": 3,
   "source": "official-docs+verified-probes",
-  "syncedAt": "2026-08-21T12:12:21.741Z",
-  "fingerprint": "3d57122c4ebe555fcf7eda4c4075d480ae7f74045122ddb7e67f8b1ae6e794e0",
+  "syncedAt": "2026-08-22T05:55:28.494Z",
+  "fingerprint": "62955958f24078a8765d505324c58832665e78ca0234239c283801e7d4d8abc1",
   "reasoningProbedAt": "2026-08-21T12:12:01.000Z",
   "models": [
     {

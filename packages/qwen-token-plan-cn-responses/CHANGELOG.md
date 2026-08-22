@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-08-22
+
+### Changed
+
+- Refreshed the release-bundled official model/tool/reasoning catalog (8 models, fingerprint `62955958f240`).
+
 ## [0.1.7] - 2026-08-22
 
 ### Changed
@@ -67,7 +73,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.7...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.8...HEAD
+[0.1.8]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.8
 [0.1.7]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.7
 [0.1.6]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.6
 [0.1.5]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.5
