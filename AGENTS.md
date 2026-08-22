@@ -6,6 +6,20 @@ This file governs the entire repository. A package-local `AGENTS.md` may add str
 
 Maintain independently installable DeepSeek Harness plugins behind deep, narrow modules. Shared repository infrastructure owns development, security, package validation, and releases; package directories own runtime behavior and user configuration.
 
+## Agent skills
+
+### Issue tracker
+
+Issues, specs, and Wayfinder maps live in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the repository's five canonical triage labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This repository uses a multi-context domain-doc layout. See `docs/agents/domain.md`.
+
 ## Repository map
 
 | Path | Responsibility |
