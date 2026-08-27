@@ -1,9 +1,8 @@
 {
   "version": 3,
   "source": "official-docs+verified-probes",
-  "syncedAt": "2026-08-21T12:12:21.741Z",
-  "fingerprint": "84ab6c0ea341f912442071174ede7b1a3b150eb49929984db5c5164b9aef0512",
-  "reasoningProbedAt": "2026-08-21T12:12:01.000Z",
+  "syncedAt": "2026-08-27T13:33:42.292Z",
+  "reasoningProbedAt": "2026-08-27T13:32:30.000Z",
   "models": [
     {
       "id": "qwen3.8-max",
@@ -31,6 +30,46 @@
         "high": "xhigh",
         "max": "xhigh"
       },
+      "input": [
+        "text",
+        "image"
+      ],
+      "contextWindow": 983616,
+      "maxTokens": 131072,
+      "harnessTools": [
+        "web_search",
+        "code_interpreter",
+        "web_extractor",
+        "web_search_image",
+        "image_search"
+      ]
+    },
+    {
+      "id": "qwen3.8-flash",
+      "brand": "千问",
+      "capabilities": "推理模型、视觉理解、文本生成",
+      "reasoning": true,
+      "reasoningEfforts": [
+        "none",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultReasoningEffort": "xhigh",
+      "acceptedReasoningEfforts": [
+        "none",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "rejectedReasoningEfforts": [],
+      "reasoningAliases": {},
       "input": [
         "text",
         "image"
@@ -290,5 +329,6 @@
       "maxTokens": 393216,
       "harnessTools": []
     }
-  ]
+  ],
+  "fingerprint": "034da919258ae1d9d08e60c2e1aa833753904cf07c92b9f1f79e9a560036ab4d"
 }
