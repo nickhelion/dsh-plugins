@@ -20,5 +20,5 @@ test("插件启动不访问官方文档或其他目录网络", async () => {
   }
   assert.ok(adapter);
   assert.equal(fetches, 0);
-  assert.equal((await adapter.listModels("qwen-token-plan-cn-responses")).length, 8);
+  assert.equal((await adapter.listModels("qwen-token-plan-cn-responses")).length, 9);
 });

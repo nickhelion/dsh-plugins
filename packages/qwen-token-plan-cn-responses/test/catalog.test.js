@@ -28,7 +28,7 @@ test("运行时目录是随版本发布的只读快照", () => {
   const catalog = new CatalogSnapshot().snapshot();
   assert.equal(catalog, BUNDLED_CATALOG);
   assert.equal(catalog.version, 3);
-  assert.equal(catalog.models.length, 8);
+  assert.equal(catalog.models.length, 9);
   assert.ok(Object.isFrozen(catalog));
   assert.ok(Object.isFrozen(catalog.models[0].reasoningEfforts));
   const glm = catalog.models.find((model) => model.id === "glm-5.2");
