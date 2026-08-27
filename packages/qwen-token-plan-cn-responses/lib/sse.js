@@ -1,5 +1,5 @@
 import { CallId, LlmError } from "@deepseek-ai/dsh-llm";
-import { formatHarnessActivity } from "./harness.js";
+import { formatHarnessActivity, formatHarnessEntry } from "./harness.js";
 
 function eventData(raw) {
   const lines = [];
@@ -81,15 +81,24 @@ function failure(message, code, status) {
   return { message, code, ...(status ? { status } : {}) };
 }
 
+/** 是否为需要单独展示的服务端内置工具输出项（而非 DSH 本地 function 调用）。 */
+function isHarnessTool(type) {
+  return !!type && !["message", "reasoning", "function_call"].includes(type);
+}
+
 function mergeHarnessActivity(activity, item, itemId) {
   const type = String(item?.type ?? "");
-  if (!type || ["message", "reasoning", "function_call"].includes(type)) return;
+  if (!isHarnessTool(type)) return null;
   const id = String(item?.id ?? itemId ?? "");
   const hit = activity.find((entry) => entry.type === type && id && entry.itemId === id);
   if (hit) {
     hit.status = item.status ?? hit.status;
     hit.data = item;
-  } else activity.push({ type, itemId: id || undefined, status: item.status, data: item });
+    return hit;
+  }
+  const entry = { type, itemId: id || undefined, status: item.status, data: item };
+  activity.push(entry);
+  return entry;
 }
 
 /** 把 Qwen Responses SSE 翻译为 DSH StreamChunk 协议。 */
@@ -100,6 +109,18 @@ export async function* responsesToDshChunks(body, signal) {
   let terminal;
   let sawContent = false;
   let sawFunctionCall = false;
+
+  /** 把一条已收到 `output_item.done` 的服务端工具项输出为独立 text 块。 */
+  function* emitHarnessEntry(entry) {
+    const text = formatHarnessEntry(entry);
+    if (!text || entry.emitted) return;
+    entry.emitted = true;
+    sawContent = true;
+    const index = nextIndex++;
+    yield { type: "block-start", index, blockType: "text" };
+    yield { type: "text-delta", index, text };
+    yield { type: "block-end", index, block: { type: "text", text } };
+  }
 
   for await (const event of iterateSse(body, signal)) {
     const outputIndex = Number.isInteger(event.output_index) ? event.output_index : -1;
@@ -158,7 +179,11 @@ export async function* responsesToDshChunks(body, signal) {
       case "response.output_item.done": {
         const item = event.item ?? {};
         const slot = slots.get(outputIndex);
-        if (!slot) { mergeHarnessActivity(activity, item, event.item_id); break; }
+        if (!slot) {
+          const entry = mergeHarnessActivity(activity, item, event.item_id);
+          if (entry) yield* emitHarnessEntry(entry);
+          break;
+        }
         if (slot.kind === "text") {
           const finalText = itemMessageText(item);
           if (!slot.text && finalText) {
@@ -205,7 +230,8 @@ export async function* responsesToDshChunks(body, signal) {
   if (!terminal) throw new LlmError("Qwen Responses 流在终止事件前关闭", "STREAM_CLOSED");
   if (slots.size) throw new LlmError("Qwen Responses 流存在未结束的输出块", "STREAM_CLOSED");
 
-  const activityText = formatHarnessActivity(activity);
+  const unemitted = activity.filter((entry) => !entry.emitted);
+  const activityText = unemitted.length ? formatHarnessActivity(unemitted) : "";
   if (activityText) {
     const index = nextIndex++;
     sawContent = true;
