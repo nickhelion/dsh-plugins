@@ -63,7 +63,11 @@ export function parsePersonalModels(markdown) {
 }
 
 export function parseResponsesModels(markdown) {
-  const marker = "description: 模型名称。支持的模型包括";
+  // 官方 Responses 文档用 YAML 描述块承载支持模型清单：早期为单行
+  // `description: 模型名称。支持的模型包括 …`，近期改为块标量
+  // `description: |-\n    模型名称。支持的模型包括 …`。marker 只锚定该固定中文短语，
+  // 兼容两种格式；文档若删除该短语仍会 fail-closed。
+  const marker = "模型名称。支持的模型包括";
   const line = markdown.split(/\r?\n/).find((candidate) => candidate.includes(marker));
   if (!line) throw new Error("Responses API 文档缺少支持模型清单");
   const list = line.slice(line.indexOf(marker) + marker.length)
@@ -111,8 +115,12 @@ export function parseReasoningProfiles(markdown) {
   const result = new Map();
 
   for (const line of lines) {
-    if (/Qwen3\.8-Max/i.test(line) && /可选值/.test(line)) {
-      result.set("qwen3.8-max", { efforts: ["low", "medium", "xhigh"], defaultEffort: "xhigh" });
+    // 文档把 Qwen3.8-Max 的说明改写为「Qwen3.8 系列」，适用于个人版全部 qwen3.8-*
+    // 文本模型。统一映射已知个人版 Qwen3.8 模型；探测证据会在编译阶段覆盖。
+    if (/Qwen3\.8/i.test(line) && /可选值/.test(line)) {
+      for (const id of ["qwen3.8-max", "qwen3.8-flash"]) {
+        result.set(id, { efforts: ["low", "medium", "xhigh"], defaultEffort: "xhigh" });
+      }
       continue;
     }
     if (/DeepSeek-V4 与 GLM 系列/i.test(line) && /适用于/.test(line)) {

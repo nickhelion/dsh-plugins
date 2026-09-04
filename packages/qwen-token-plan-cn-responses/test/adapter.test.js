@@ -52,8 +52,8 @@ test("Adapter 从凭据 Seam 取 Key、注入模型工具能力并完成整条 H
   const models = await adapter.listModels("qwen-token-plan-cn-responses");
   assert.equal(models[0].name, "qwen3.8-max");
   assert.equal(models[0].description, "Responses · 5 个内置工具");
-  assert.equal(models[2].name, "deepseek-v4-pro-0813");
-  assert.equal(models[2].description, "Responses · 仅本地工具");
+  assert.equal(models[3].name, "deepseek-v4-pro-0813");
+  assert.equal(models[3].description, "Responses · 仅本地工具");
 
   const deepseek = await adapter.resolveModel("qwen-token-plan-cn-responses", "deepseek-v4-pro-0813");
   assert.deepEqual(deepseek.reasoning.efforts.map((effort) => effort.id), ["low", "high", "max"]);

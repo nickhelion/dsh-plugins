@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-09-04
+
+### Added
+
+- Advertise the new `qwen3.8-flash` Personal model (text + image, full server-side Harness tools) from the official catalog snapshot.
+
+### Changed
+
+- Updated the Responses and Chat API reference parsers to handle the official docs' new YAML block-scalar `description` format, so the daily catalog-sync workflow can detect drift again.
+- Regenerated the release-bundled catalog snapshot from the current official documents and verified probes (9 models, fingerprint `07706cd624d3`).
+
+### Fixed
+
+- `catalog:sync` no longer fails on the Responses API document's rewritten `description: |-` block-scalar model list.
+
 ## [0.1.7] - 2026-08-22
 
 ### Changed
@@ -67,7 +82,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.7...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.8...HEAD
+[0.1.8]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.8
 [0.1.7]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.7
 [0.1.6]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.6
 [0.1.5]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.5

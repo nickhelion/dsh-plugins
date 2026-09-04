@@ -5,6 +5,7 @@ export const DOCS = {
 | 品牌 | 模型 ID（Model ID） | 模型能力 |
 | --- | --- | --- |
 | 千问 | qwen3.8-max | 推理模型、视觉理解、文本生成 |
+| 千问 | qwen3.8-flash | 推理模型、视觉理解、文本生成 |
 | 千问 | qwen3.7-max | 推理模型、文本生成 |
 | DeepSeek | deepseek-v4-pro-0813 | 推理模型、文本生成 |
 | 千问 | qwen-image | 图片生成 |
@@ -18,6 +19,7 @@ ${"工具说明".repeat(60)}
 | 模型 | 支持的工具 |
 | --- | --- |
 | qwen3.8-max | 联网搜索、代码解释器、网页抓取、以图搜图、文搜图 |
+| qwen3.8-flash | 联网搜索、代码解释器、网页抓取、以图搜图、文搜图 |
 | qwen3.7-max | 联网搜索、代码解释器、网页抓取 |
 ### 团队版
 | 模型 | 支持的工具 |
@@ -30,6 +32,7 @@ ${"配置说明".repeat(50)}
 {
   "models": { "providers": { "bailian-token-plan": { "models": [
     { "id": "qwen3.8-max", "reasoning": true, "input": ["text", "image"], "contextWindow": 983616, "maxTokens": 131072 },
+    { "id": "qwen3.8-flash", "reasoning": true, "input": ["text", "image"], "contextWindow": 983616, "maxTokens": 131072 },
     { "id": "qwen3.7-max", "reasoning": false, "input": ["text"], "contextWindow": 1000000, "maxTokens": 65536 },
     { "id": "deepseek-v4-pro-0813", "reasoning": false, "input": ["text"], "contextWindow": 163840, "maxTokens": 32768 }
   ] } } }
@@ -45,7 +48,8 @@ components:
       properties:
         model:
           type: string
-          description: 模型名称。支持的模型包括 qwen3.8-max、qwen3.7-max、deepseek-v4-pro-0813、qwen3.6-flash。
+          description: |-
+            模型名称。支持的模型包括 qwen3.8-max、qwen3.8-flash、qwen3.7-max、deepseek-v4-pro-0813、qwen3.6-flash。
 `,
   chat: `# OpenAI Chat API 参考
 ${"Chat API 参数说明".repeat(30)}
@@ -54,7 +58,7 @@ ${"Chat API 参数说明".repeat(30)}
           description: |-
             控制模型的推理力度。
 
-            **Qwen3.8-Max 与 Qwen3.8-Max-Preview：** 可选值：\`low\`、\`medium\`、\`xhigh\`。默认 \`xhigh\`。
+            **Qwen3.8 系列：** 可选值：\`low\`、\`medium\`、\`xhigh\`。默认 \`xhigh\`。
 
             **DeepSeek-V4 与 GLM 系列：** 可选值：\`high\`、\`max\`。适用于 \`glm-5.2\`、\`glm-5.1\`、\`glm-5\`、\`deepseek-v4-pro\`、\`deepseek-v4-flash\`（阿里云直供）（\`deepseek-v4-flash-0731\` 除外）。
 
