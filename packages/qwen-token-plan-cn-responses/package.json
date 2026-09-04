@@ -1,6 +1,6 @@
 {
   "name": "dsh-qwen-token-plan-cn-responses",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "DeepSeek Harness adapter for Qwen Token Plan CN with Responses tools, GLM Chat routing, and a versioned official catalog",
   "author": "nickhelion",
   "repository": {
