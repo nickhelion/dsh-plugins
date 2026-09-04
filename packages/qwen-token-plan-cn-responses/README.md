@@ -51,7 +51,7 @@ DSH StreamChunk ◄──────── Qwen Responses SSE
 | 模型 | 输入 | 可调推理强度 | 服务端内置工具 | DSH 本地函数工具 |
 | --- | --- | --- | --- | --- |
 | `qwen3.8-max` | 文本、图片 | 关闭 / `low` / `medium` / `xhigh`（默认） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
-| `qwen3.8-flash` | 文本、图片 | `low` / `medium` / `xhigh`（默认） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
+| `qwen3.8-flash` | 文本、图片 | 关闭 / `low` / `medium` / `xhigh`（默认） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
 | `qwen3.7-max` | 文本 | 关闭及 Responses 七档（默认 `xhigh`） | 联网搜索、代码解释器、网页抓取 | 支持 |
 | `qwen3.7-plus` | 文本、图片 | 关闭及 Responses 七档（默认 `xhigh`） | 联网搜索、代码解释器、网页抓取、文搜图、以图搜图 | 支持 |
 | `qwen3.6-flash` | 文本、图片 | 关闭及 Responses 七档（默认 `xhigh`） | 官方当前未列出 | 支持 |

@@ -8,12 +8,12 @@ All notable changes to this project are documented here. The format follows Keep
 
 ### Added
 
-- Advertise the new `qwen3.8-flash` Personal model (text + image, full server-side Harness tools) from the official catalog snapshot.
+- Advertise the new `qwen3.8-flash` Personal model (text + image, full server-side Harness tools) from the official catalog snapshot, with first-party Responses probe evidence confirming `none`/`minimal`/`low`/`medium`/`high`/`xhigh`/`max` all return HTTP 200 (native `none`/`low`/`medium`/`xhigh`, `high`/`max` alias `xhigh`).
 
 ### Changed
 
 - Updated the Responses and Chat API reference parsers to handle the official docs' new YAML block-scalar `description` format, so the daily catalog-sync workflow can detect drift again.
-- Regenerated the release-bundled catalog snapshot from the current official documents and verified probes (9 models, fingerprint `07706cd624d3`).
+- Regenerated the release-bundled catalog snapshot from the current official documents and verified probes (9 models, fingerprint `15d42f425992`).
 
 ### Fixed
 
