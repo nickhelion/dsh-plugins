@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows Keep
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-09-09
+
+### Changed
+
+- Declare support for DeepSeek Harness `0.1.2-rc.1` while retaining the `0.1.0-rc.6` and `0.1.1-rc.x` lines.
+- Align the Node.js engine contract with Harness: `^22.19.0 || >=24.0.0` (Node.js 23 is unsupported).
+
+### Fixed
+
+- Support the `CallId` to `ToolCallId` API rename in Harness `0.1.2-rc.1` without breaking older supported Harness releases.
+
 ## [0.1.8] - 2026-09-04
 
 ### Added
@@ -82,7 +93,8 @@ All notable changes to this project are documented here. The format follows Keep
 - Responses SSE mapping for text, reasoning, functions, usage, failures and provider-side tool activity.
 - Network-free tests plus an optional live catalog check.
 
-[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.8...HEAD
+[Unreleased]: https://github.com/nickhelion/dsh-plugins/compare/qwen-token-plan-cn-responses-v0.1.9...HEAD
+[0.1.9]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.9
 [0.1.8]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.8
 [0.1.7]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.7
 [0.1.6]: https://github.com/nickhelion/dsh-plugins/releases/tag/qwen-token-plan-cn-responses-v0.1.6

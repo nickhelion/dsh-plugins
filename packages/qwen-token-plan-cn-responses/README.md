@@ -77,8 +77,8 @@ Responses schema 中：
 
 ### 前置条件
 
-- DeepSeek Harness `0.1.0-rc.6` 或更新的 `0.1.x`；
-- Node.js 22.19 或更高版本；
+- DeepSeek Harness `0.1.0-rc.6`、`0.1.1-rc.x` 或 `0.1.2-rc.1`；
+- Node.js `^22.19.0` 或 `>=24.0.0`（不支持 Node.js 23）；
 - Token Plan 个人版 API Key；
 - DSH profile（以下以 `web` 为例）。
 
@@ -115,7 +115,7 @@ dsh plugin --profile web remove dsh-qwen-token-plan-cn-responses
 生产环境建议固定版本：
 
 ```bash
-dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.8
+dsh plugin --profile web add dsh-qwen-token-plan-cn-responses@0.1.9
 ```
 
 也可直接安装 GitHub 分支或 commit：

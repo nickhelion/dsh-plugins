@@ -1,4 +1,7 @@
-import { CallId, LlmError } from "@deepseek-ai/dsh-llm";
+import * as dshLlm from "@deepseek-ai/dsh-llm";
+
+const { LlmError } = dshLlm;
+const ToolCallId = dshLlm.ToolCallId ?? dshLlm.CallId;
 
 import { sanitizeText } from "./content.js";
 import { iterateSse } from "./sse.js";
@@ -110,7 +113,7 @@ function mappedFinish(reason) {
 function closeBlock(block) {
   if (block.kind === "text") return { type: "text", text: block.text };
   if (block.kind === "reasoning") return { type: "reasoning", text: block.text };
-  return { type: "tool-call", id: CallId(block.id || `call_${block.wireIndex}`), name: block.name || "", arguments: block.text || "{}" };
+  return { type: "tool-call", id: ToolCallId(block.id || `call_${block.wireIndex}`), name: block.name || "", arguments: block.text || "{}" };
 }
 
 /** 把 OpenAI Chat Completions SSE 翻译为 DSH StreamChunk。 */
@@ -162,7 +165,7 @@ export async function* chatToDshChunks(body, signal) {
         block.text += fragment;
         if (fragment || call.id !== undefined || call.function?.name !== undefined) {
           yield {
-            type: "tool-call-delta", index: block.index, id: CallId(block.id || `call_${wireIndex}`),
+            type: "tool-call-delta", index: block.index, id: ToolCallId(block.id || `call_${wireIndex}`),
             ...(block.name ? { name: block.name } : {}), argumentsDelta: fragment,
           };
         }

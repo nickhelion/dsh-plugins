@@ -1,4 +1,7 @@
-import { CallId, LlmError } from "@deepseek-ai/dsh-llm";
+import * as dshLlm from "@deepseek-ai/dsh-llm";
+
+const { LlmError } = dshLlm;
+const ToolCallId = dshLlm.ToolCallId ?? dshLlm.CallId;
 import { formatHarnessActivity } from "./harness.js";
 
 function eventData(raw) {
@@ -117,7 +120,7 @@ export async function* responsesToDshChunks(body, signal) {
           yield { type: "block-start", index: slot.index, blockType: "reasoning" };
         } else if (item.type === "function_call") {
           const slot = {
-            kind: "tool-call", index: nextIndex++, id: CallId(String(item.call_id ?? item.id ?? `call_${outputIndex}`)),
+            kind: "tool-call", index: nextIndex++, id: ToolCallId(String(item.call_id ?? item.id ?? `call_${outputIndex}`)),
             name: String(item.name ?? ""), arguments: String(item.arguments ?? ""),
           };
           slots.set(outputIndex, slot);
