@@ -79,9 +79,29 @@ function serverchanUrl(sendkey) {
   return `https://sctapi.ftqq.com/${sendkey}.send`;
 }
 
+/**
+ * 读取会话日志（按发生顺序，旧 → 新）。
+ *
+ * DSH 0.1.2-rc.1 移除了 `Session.events` getter：新版会话类改用
+ * `snapshotEvents()`（另有只含本会话自有事件的 `ownEvents()`），
+ * 而 0.1.0-rc.x / 0.1.1-rc.x 只有 `events`。两条 API 线都要能读，
+ * 否则新版 harness 上会静默取到 undefined。
+ *
+ * 读日志本身失败时按“空日志”处理：取不到正文只该让通知内容降级，
+ * 绝不允许把异常抛给 harness。
+ */
+function sessionEvents(session) {
+  try {
+    if (typeof session.snapshotEvents === "function") return session.snapshotEvents();
+    if (Array.isArray(session.events)) return session.events;
+  } catch {
+    // 落到空日志
+  }
+  return [];
+}
+
 /** 取最近一条 assistant/message 里的文本块（跳过只有工具调用的中间步骤）。 */
-function lastAssistantText(session) {
-  const events = session.events;
+function lastAssistantText(events) {
   for (let i = events.length - 1; i >= 0; i--) {
     const event = events[i];
     if (event.type !== "assistant/message") continue;
@@ -97,8 +117,7 @@ function lastAssistantText(session) {
 }
 
 /** 取最近的 session/title 事件作为对话标题。 */
-function sessionTitle(session) {
-  const events = session.events;
+function sessionTitle(events) {
   for (let i = events.length - 1; i >= 0; i--) {
     const event = events[i];
     if (event.type !== "session/title") continue;
@@ -139,12 +158,13 @@ async function deliver(ctx, options, sendkey, session, event, reasonKind) {
   try {
     const cwd = session.header?.cwd ?? "";
     const branch = await gitBranch(cwd);
-    let response = lastAssistantText(session);
+    const events = sessionEvents(session);
+    let response = lastAssistantText(events);
     const truncated = response.length > options.maxResponseChars;
     if (truncated) {
       response = `${response.slice(0, options.maxResponseChars).trimEnd()}\n\n> 回复过长，已截断`;
     }
-    const title = sessionTitle(session);
+    const title = sessionTitle(events);
     const reasonLabel = REASON_LABELS[reasonKind] ?? String(reasonKind);
     const details = [
       `- **对话标题**：${title}`,

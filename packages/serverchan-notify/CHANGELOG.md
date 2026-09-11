@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-09-11
+
+### Fixed
+
+- **Notifications stopped silently on DeepSeek Harness `0.1.2-rc.1`.** That release removed the `Session.events` getter, so reading the session log returned `undefined` and every `turn/end` threw `TypeError: Cannot read properties of undefined (reading 'length')` inside the fire-and-forget delivery path — swallowed by design into a `logger.warn`, so it produced zero pushes with no visible failure. Session-log reads now go through one `sessionEvents()` helper that prefers `snapshotEvents()` (Harness ≥ `0.1.2-rc.1`) and falls back to `events` (Harness `0.1.0-rc.x` / `0.1.1-rc.x`), so both supported lines keep working.
+- The smoke test no longer fabricates a session shape that the real `Session` class outgrew. It now exercises both API lines — a legacy object with `events`, and a modern object exposing only `snapshotEvents()`/`ownEvents()` — and asserts the reply text and conversation title are extracted from each. Reverting the fix above makes the test fail.
+
 ## [1.0.2] - 2026-08-21
 
 ### Security
@@ -29,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `dsh.bundle` manifest so the plugin installs via `dsh plugin add`.
 - Bilingual documentation (English / 简体中文), `AGENTS.md`, smoke test, and a live-push test script.
 
+[1.0.3]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.0.3
 [1.0.2]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.0.2
 [1.0.1]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.0.1
 [1.0.0]: https://github.com/nickhelion/dsh-serverchan-notify/releases/tag/v1.0.0

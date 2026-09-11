@@ -27,6 +27,15 @@ These rules are load-bearing; do not "improve" them away:
 - SendKey precedence: `SERVERCHAN_SENDKEY` → `config.sendkey` → `SERVERCHAN_SENDKEY_FILE` → `config.sendkeyFile` → `$DSH_HOME/secrets/serverchan_sendkey`.
 - Push URL: keys matching `/^sctp(\d+)t/` use `https://<n>.push.ft07.com/send/<key>.send`; others use `https://sctapi.ftqq.com/<key>.send`.
 
+## Session log access — two Harness API lines
+
+Reading the session log goes through the single `sessionEvents(session)` helper in `lib/index.js`. Do not read a session field directly anywhere else.
+
+- Harness `0.1.2-rc.1` **removed** the `Session.events` getter; it exposes `snapshotEvents()` and `ownEvents()`.
+- Harness `0.1.0-rc.x` / `0.1.1-rc.x` expose only `events`.
+
+The helper prefers `snapshotEvents()` and falls back to `events`. Reading an accessor the running Harness does not have yields `undefined`, which throws inside the fire-and-forget `deliver` and is swallowed into a `logger.warn` — the plugin then stops notifying **with no visible error**. That is exactly the 1.0.2 failure; see the CHANGELOG. `smoke-test.mjs` guards it by testing a legacy-shaped session and a modern one that deliberately has no `events` property.
+
 ## Deploying a change on a live machine
 
 1. From the monorepo root, `npm test --workspace dsh-serverchan-notify` passes.

@@ -34,7 +34,7 @@
 
 ## 环境要求
 
-- DeepSeek Harness (DSH)，`@deepseek-ai/cordis` ^4.0.1
+- DeepSeek Harness (DSH) —— 已在 `0.1.1-rc.2` 与 `0.1.2-rc.1` 上验证（`@deepseek-ai/cordis` ^4.0.1）。插件按运行时 harness 实际暴露的访问器读取会话日志，因此两条 API 线都支持。
 - Node.js ≥ 18
 - 一个 Server酱3 SendKey（<https://sct.ftqq.com/> 免费注册）
 

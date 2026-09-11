@@ -34,7 +34,7 @@
 
 ## Requirements
 
-- DeepSeek Harness (DSH) with `@deepseek-ai/cordis` ^4.0.1
+- DeepSeek Harness (DSH) — verified against `0.1.1-rc.2` and `0.1.2-rc.1` (`@deepseek-ai/cordis` ^4.0.1). The plugin reads the session log through whichever accessor the running Harness exposes, so both API lines are supported.
 - Node.js ≥ 18
 - A Server酱3 SendKey (free account at <https://sct.ftqq.com/>)
 
