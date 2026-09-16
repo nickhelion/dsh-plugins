@@ -25,7 +25,7 @@ This repository uses a multi-context domain-doc layout. See `docs/agents/domain.
 | Path | Responsibility |
 | --- | --- |
 | `packages/qwen-token-plan-cn-responses` | Qwen Token Plan Responses LLM Adapter and official-document catalog sync. |
-| `packages/serverchan-notify` | Non-blocking ServerChan3 turn-end notification plugin. |
+| `packages/serverchan-notify` | Non-blocking ServerChan3 turn-end and agent-question notification plugin. |
 | `scripts/run-workspaces.mjs` | Runs package scripts without assuming a globally installed `npm` binary. |
 | `scripts/check-packages.mjs` | Audits npm tarball contents for every public workspace. |
 | `scripts/release.mjs` | Prepares a package-specific version commit and Tag; optionally pushes them. |
@@ -70,7 +70,7 @@ Read `packages/qwen-token-plan-cn-responses/AGENTS.md`. Preserve its catalog fai
 
 ### ServerChan notifier
 
-Read `packages/serverchan-notify/AGENTS.md`. Preserve fire-and-forget delivery, one notification per top-level finished turn, and non-disclosure of SendKeys.
+Read `packages/serverchan-notify/AGENTS.md`. Preserve fire-and-forget delivery, one notification per triggering top-level event (finished turn, or `ask_user_question` call), and non-disclosure of SendKeys.
 
 ## Release contract
 

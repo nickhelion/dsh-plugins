@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-09-12
+
+### Added
+
+- **Question reminders.** The plugin now also pushes a notification when the agent calls `ask_user_question` and blocks waiting for a human answer — the one moment where missing a notification stalls the whole run. The push carries the conversation context plus every question with its header, text, options and option descriptions, and is marked multi-select when applicable. New option `notifyQuestions` (default `true`) turns it off.
+- Question reminders fire on the `tool/call` session event, so they land the moment the question is asked rather than after it is answered. Like turn-end pushes, they are fire-and-forget, skip subagent sessions unless `notifySubagents: true`, and respect `maxResponseChars`.
+
+### Changed
+
+- Delivery is split into one shared `push()` plus `deliver()` (turn end) and `deliverQuestion()` (agent question); both assemble a common context header. The truncation notice changed from `回复过长，已截断` (reply-specific) to the neutral `内容过长，已截断`, now shared by both paths.
+
 ## [1.0.3] - 2026-09-11
 
 ### Fixed
@@ -36,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `dsh.bundle` manifest so the plugin installs via `dsh plugin add`.
 - Bilingual documentation (English / 简体中文), `AGENTS.md`, smoke test, and a live-push test script.
 
+[1.1.0]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.1.0
 [1.0.3]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.0.3
 [1.0.2]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.0.2
 [1.0.1]: https://github.com/nickhelion/dsh-plugins/releases/tag/serverchan-notify-v1.0.1

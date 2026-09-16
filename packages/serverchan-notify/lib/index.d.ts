@@ -8,6 +8,8 @@ export interface ServerChanNotifyConfig {
   sendkeyFile?: string;
   /** Which turn/end reason kinds trigger a push; `interrupted` is never pushed. */
   reasons?: string[];
+  /** Also push when the agent calls `ask_user_question` (default true). */
+  notifyQuestions?: boolean;
   /** Also push subagent sessions (default false). */
   notifySubagents?: boolean;
   /** HTTP timeout in milliseconds (default 8000). */
@@ -24,7 +26,8 @@ export const name: string;
 /**
  * Cordis plugin entry. Mount it via a loader row (`cordis.patch.yml`) or
  * `ctx.plugin(...)`: it subscribes to `session/event` and pushes a
- * ServerChan3 notification per finished top-level turn.
+ * ServerChan3 notification per finished top-level turn, plus one per
+ * `ask_user_question` tool call (the agent is blocked waiting for a human).
  */
 export default function serverchanNotify(
   ctx: Context,

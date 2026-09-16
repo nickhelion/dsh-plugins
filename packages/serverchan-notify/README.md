@@ -2,7 +2,7 @@
 
 # 🔔 dsh-serverchan-notify
 
-**A DeepSeek Harness (DSH) plugin that pushes a [Server酱3 (ServerChan³)](https://sct.ftqq.com/) notification to your WeChat every time an agent turn finishes an answer — codex Stop-hook parity for DSH.**
+**A DeepSeek Harness (DSH) plugin that pushes a [Server酱3 (ServerChan³)](https://sct.ftqq.com/) notification to your WeChat every time an agent turn finishes an answer — and every time the agent asks you a question. Codex Stop-hook parity for DSH, plus the case codex never covered: an agent blocked on you.**
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
@@ -18,14 +18,14 @@
 ## What it does
 
 - Subscribes to the DSH session event stream (`ctx.on("session/event", …)`).
-- On every `turn/end` (`completed` / `error` / `blocked` / `max-tokens` / `aborted`), pushes one Markdown notification to Server酱3 → your WeChat.
-- Each notification carries: conversation title, model, project directory, git branch, turn status, finish time, session id, and the latest reply excerpt (truncated at 16 000 chars).
+- On every `turn/end` (`completed` / `error` / `blocked` / `max-tokens` / `aborted`), pushes one Markdown notification to Server酱3 → your WeChat. Each notification carries: conversation title, model, project directory, git branch, turn status, finish time, session id, and the latest reply excerpt (truncated at 16 000 chars).
+- **Also pushes when the agent asks you a question.** An `ask_user_question` tool call means the agent is blocked until a human answers — the worst case to miss — so it gets a notification of its own, carrying every question, its options, and their descriptions. Disable with `notifyQuestions: false`.
 - **Fire-and-forget**: a failed push only logs a warning and never blocks or interrupts the agent loop.
 - Skips subagent sessions by default (no spam from internal subtasks).
 
 | | codex Stop hook | this plugin |
 | --- | --- | --- |
-| Trigger | one per finished turn | one per finished turn (`turn/end`) |
+| Trigger | one per finished turn | one per finished turn (`turn/end`), plus one per `ask_user_question` call |
 | Key source | env / `~/.codex/secrets/…` | env / config / `$DSH_HOME/secrets/…` (see [SendKey resolution](#sendkey-resolution)) |
 | Failure handling | never blocks the turn | never blocks the turn |
 | Scope | global `hooks.json` | global `$DSH_HOME/cordis.patch.yml` (or per profile) |
@@ -111,12 +111,15 @@ The first non-empty value wins, in this order:
 | `sendkey` | — | Inline key (overridden by the `SERVERCHAN_SENDKEY` env var) |
 | `sendkeyFile` | `$DSH_HOME/secrets/serverchan_sendkey` | Path to a key file; `~` is expanded |
 | `reasons` | `[completed, blocked, error, max-tokens, aborted]` | Which `turn/end` reasons trigger a push (`interrupted` is never pushed) |
+| `notifyQuestions` | `true` | Push when the agent calls `ask_user_question` and waits for you |
 | `notifySubagents` | `false` | Also push subagent sessions (off by default to avoid spam) |
 | `timeoutMs` | `8000` | HTTP timeout in milliseconds |
-| `maxResponseChars` | `16000` | Reply excerpt truncation length |
+| `maxResponseChars` | `16000` | Reply excerpt / question text truncation length |
 | `disabled` | `false` | Disable without removing the row (no key read, no subscription) |
 
 ## Sample notification
+
+Turn finished:
 
 > **DSH 完成：<conversation title>**
 >
@@ -132,6 +135,29 @@ The first non-empty value wins, in this order:
 >
 > …the latest assistant reply…
 
+The agent is waiting on you:
+
+> **DSH 提问：<conversation title>**
+>
+> - **对话标题**：…
+> - **模型**：deepseek-official / deepseek-v4-pro
+> - **项目目录**：`/home/you/project`
+> - **Git 分支**：`main`
+> - **提问时间**：2026-08-18T21:05:00.000Z
+> - **会话 ID**：`session-12`
+>
+> ## DSH 正在等待你的回答
+>
+> ### 1. Choose Mode
+> Which path should I take?
+> - Ship it (Recommended) — small and reversible
+> - Plan first — one extra review round
+>
+> ### 2. Scope
+> - README
+> - Tests
+> \> 该问题可多选
+
 ## Troubleshooting
 
 | Symptom | Fix |
@@ -139,7 +165,8 @@ The first non-empty value wins, in this order:
 | "未找到 Server酱 SendKey" warning at boot | Provide the key via one of the 5 sources above |
 | `HTTP 403` / timeout in the log | Network / proxy issue; the push domain is derived from the key (`<n>.push.ft07.com`) |
 | No push after restart | Confirm the row id is unique and the package resolves — `dsh --profile web --dump-config \| grep -A8 serverchan-notify` |
-| Too many pushes | Turn on `notifySubagents: false` (default) or trim `reasons` |
+| Too many pushes | Turn on `notifySubagents: false` (default), trim `reasons`, or set `notifyQuestions: false` |
+| Question reminder shows "无法解析本次提问内容" | The model emitted malformed tool arguments; the harness still got the question — open DSH to answer |
 | Temporarily stop | `disabled: true`, then restart |
 
 ## Development
@@ -154,7 +181,7 @@ npm run test:live  # send one real test push with the configured key
 ## Repository layout
 
 ```
-lib/index.js      plugin entry — event subscription, message assembly, HTTP push
+lib/index.js      plugin entry — event subscription, message assembly, HTTP push (turn end + agent question)
 test-send.mjs     standalone real push (same key resolution order as the plugin)
 smoke-test.mjs    cordis in-process test with a stubbed fetch
 package.json      package metadata + npm scripts

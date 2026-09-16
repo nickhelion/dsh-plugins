@@ -2,7 +2,7 @@
 
 # 🔔 dsh-serverchan-notify
 
-**DeepSeek Harness (DSH) 插件：每当一个回答回合结束，就向 [Server酱3 (ServerChan³)](https://sct.ftqq.com/) 推送一条通知到你的微信——对齐 codex Stop hook 的行为。**
+**DeepSeek Harness (DSH) 插件：每当一个回答回合结束，就向 [Server酱3 (ServerChan³)](https://sct.ftqq.com/) 推送一条通知到你的微信；agent 向你提问时同样推送——对齐 codex Stop hook 的行为，并补上 codex 没覆盖的那种情形：agent 正卡在等你回答。**
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
@@ -18,14 +18,14 @@
 ## 功能
 
 - 订阅 DSH 会话事件流（`ctx.on("session/event", …)`）。
-- 每个回答回合结束（`turn/end`，无论 `completed` / `error` / `blocked` / `max-tokens` / `aborted`）推送一条 Markdown 通知到 Server酱3 → 你的微信。
-- 通知内容：对话标题、模型、项目目录、Git 分支、回合状态、完成时间、会话 ID，以及最新一段回复正文（超过 16000 字符自动截断）。
+- 每个回答回合结束（`turn/end`，无论 `completed` / `error` / `blocked` / `max-tokens` / `aborted`）推送一条 Markdown 通知到 Server酱3 → 你的微信。通知内容：对话标题、模型、项目目录、Git 分支、回合状态、完成时间、会话 ID，以及最新一段回复正文（超过 16000 字符自动截断）。
+- **agent 向你提问时也推送。** 出现 `ask_user_question` 工具调用，就意味着 agent 已经阻塞、在等人回答——这是最不该漏掉的情形，因此单独推一条：带上每个问题的 header、正文、选项及其说明。用 `notifyQuestions: false` 关闭。
 - **fire-and-forget**：推送失败只记一条警告日志，绝不阻塞或中断 agent 主循环。
 - 默认跳过子代理会话，避免被内部子任务刷屏。
 
 | | codex Stop hook | 本插件 |
 | --- | --- | --- |
-| 触发时机 | 每个回合结束一次 | 每个回合结束一次（`turn/end`） |
+| 触发时机 | 每个回合结束一次 | 每个回合结束一次（`turn/end`），外加每次 `ask_user_question` 调用一次 |
 | key 来源 | 环境变量 / `~/.codex/secrets/…` | 环境变量 / 配置 / `$DSH_HOME/secrets/…`（见 [SendKey 解析顺序](#sendkey-解析顺序)） |
 | 失败处理 | 绝不影响回合 | 绝不影响回合 |
 | 作用域 | 全局 `hooks.json` | 全局 `$DSH_HOME/cordis.patch.yml`（或单 profile） |
@@ -111,12 +111,15 @@ dsh plugin --profile web add "$PWD/dsh-plugins/packages/serverchan-notify"
 | `sendkey` | — | 内联明文 key（优先级低于 `SERVERCHAN_SENDKEY` 环境变量） |
 | `sendkeyFile` | `$DSH_HOME/secrets/serverchan_sendkey` | key 文件路径，支持 `~` 开头 |
 | `reasons` | `[completed, blocked, error, max-tokens, aborted]` | 哪些 `turn/end` 原因触发推送（`interrupted` 恒不推） |
+| `notifyQuestions` | `true` | agent 调用 `ask_user_question` 等你回答时是否推送 |
 | `notifySubagents` | `false` | 是否也给子代理会话推送（默认关，防刷屏） |
 | `timeoutMs` | `8000` | HTTP 超时（毫秒） |
-| `maxResponseChars` | `16000` | 回复正文截断长度 |
+| `maxResponseChars` | `16000` | 回复正文 / 提问内容截断长度 |
 | `disabled` | `false` | 临时禁用（不读 key、不订阅事件） |
 
 ## 通知示例
+
+回合结束：
 
 > **DSH 完成：<对话标题>**
 >
@@ -132,6 +135,29 @@ dsh plugin --profile web add "$PWD/dsh-plugins/packages/serverchan-notify"
 >
 > ……最新一段模型回复……
 
+agent 正在等你回答：
+
+> **DSH 提问：<对话标题>**
+>
+> - **对话标题**：…
+> - **模型**：deepseek-official / deepseek-v4-pro
+> - **项目目录**：`/home/you/project`
+> - **Git 分支**：`main`
+> - **提问时间**：2026-08-18T21:05:00.000Z
+> - **会话 ID**：`session-12`
+>
+> ## DSH 正在等待你的回答
+>
+> ### 1. 选择模式
+> 要按哪条路径继续？
+> - 直接改（推荐） — 小步快跑
+> - 先出方案 — 多一轮评审
+>
+> ### 2. 改动范围
+> - README
+> - 测试
+> \> 该问题可多选
+
 ## 常见问题
 
 | 现象 | 处理 |
@@ -139,7 +165,8 @@ dsh plugin --profile web add "$PWD/dsh-plugins/packages/serverchan-notify"
 | 启动日志出现「未找到 Server酱 SendKey」 | 按上面 5 种来源之一提供 key |
 | 日志出现 `HTTP 403` / 超时 | 网络或代理问题；推送域名由 key 推导（`<n>.push.ft07.com`） |
 | 重启后仍收不到 | 确认行 id 唯一且包可解析——`dsh --profile web --dump-config \| grep -A8 serverchan-notify` |
-| 推送太频繁 | 保持 `notifySubagents: false`（默认）或裁剪 `reasons` |
+| 推送太频繁 | 保持 `notifySubagents: false`（默认）、裁剪 `reasons`，或设 `notifyQuestions: false` |
+| 提问提醒显示「无法解析本次提问内容」 | 模型输出的工具参数 JSON 损坏；harness 本身仍拿到了问题，回 DSH 界面作答即可 |
 | 想临时停用 | `disabled: true`，重启生效 |
 
 ## 开发
@@ -154,7 +181,7 @@ npm run test:live  # 按配置的 key 真实推送一条测试通知
 ## 仓库结构
 
 ```
-lib/index.js      插件入口——事件订阅、报文组装、HTTP 推送
+lib/index.js      插件入口——事件订阅、报文组装、HTTP 推送（回合结束 + agent 提问）
 test-send.mjs     独立真实推送脚本（key 解析顺序与插件一致）
 smoke-test.mjs    cordis 进程内冒烟测试（fetch 打桩）
 package.json      包元数据 + npm scripts

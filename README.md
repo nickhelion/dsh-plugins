@@ -14,13 +14,13 @@
 | 包 | 用途 | 安装 |
 | --- | --- | --- |
 | [`dsh-qwen-token-plan-cn-responses`](packages/qwen-token-plan-cn-responses) | 千问 Token Plan 个人版 Responses API 模型提供方；同步官方模型/内置工具目录。 | `dsh plugin --profile web add dsh-qwen-token-plan-cn-responses` |
-| [`dsh-serverchan-notify`](packages/serverchan-notify) | 每个顶层 Agent 回合结束后，经 Server酱3 推送微信通知。 | `dsh plugin --profile web add dsh-serverchan-notify` |
+| [`dsh-serverchan-notify`](packages/serverchan-notify) | 顶层 Agent 回合结束时、以及 agent 提问等人回答时，经 Server酱3 推送微信通知。 | `dsh plugin --profile web add dsh-serverchan-notify` |
 
 插件可分别安装、升级和卸载；安装一个不会隐式启用另一个。
 
 ### Server酱通知 · `dsh-serverchan-notify`
 
-在 DSH 里跑 agent 时，`dsh-serverchan-notify` 会在每个顶层回合结束后，通过 Server酱3（ServerChan3）发一条微信通知到手机，无论正常完成、报错、被拦截还是超时都会通知。消息里带上对话标题、模型、项目目录、回合状态和最新回复摘要，人离开电脑也能知道「这轮跑完了」。安装只要一条命令，再填一个 SendKey、挂一行 patch，配置很轻。推送是 fire-and-forget，失败只写一条日志，不会阻塞 agent 主循环。详见[包文档](packages/serverchan-notify/README.zh-CN.md)。
+在 DSH 里跑 agent 时，`dsh-serverchan-notify` 会在每个顶层回合结束后，通过 Server酱3（ServerChan3）发一条微信通知到手机，无论正常完成、报错、被拦截还是超时都会通知。消息里带上对话标题、模型、项目目录、回合状态和最新回复摘要，人离开电脑也能知道「这轮跑完了」。agent 调用 `ask_user_question` 向你提问时同样会推一条——那时 agent 正阻塞等你回答，是更不能漏掉的时刻，通知里会带上问题、选项和选项说明（可用 `notifyQuestions: false` 关掉）。安装只要一条命令，再填一个 SendKey、挂一行 patch，配置很轻。推送是 fire-and-forget，失败只写一条日志，不会阻塞 agent 主循环。详见[包文档](packages/serverchan-notify/README.zh-CN.md)。
 
 ### 千问 Token Plan 提供方 · `dsh-qwen-token-plan-cn-responses`
 

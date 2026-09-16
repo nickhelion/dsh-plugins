@@ -14,13 +14,13 @@ A community-plugin monorepo for [DeepSeek Harness](https://github.com/deepseek-a
 | Package | Purpose | Install |
 | --- | --- | --- |
 | [`dsh-qwen-token-plan-cn-responses`](packages/qwen-token-plan-cn-responses) | Qwen Token Plan CN Personal Responses provider with official model/tool catalog sync. | `dsh plugin --profile web add dsh-qwen-token-plan-cn-responses` |
-| [`dsh-serverchan-notify`](packages/serverchan-notify) | ServerChan3 WeChat notifications after each top-level Agent turn. | `dsh plugin --profile web add dsh-serverchan-notify` |
+| [`dsh-serverchan-notify`](packages/serverchan-notify) | ServerChan3 WeChat notifications at top-level Agent turn end, and when the agent asks a question. | `dsh plugin --profile web add dsh-serverchan-notify` |
 
 Each package installs independently. Installing one never silently enables the other.
 
 ### ServerChan notifications · `dsh-serverchan-notify`
 
-`dsh-serverchan-notify` sends a WeChat notification through ServerChan3 (Server酱3) whenever a top-level DSH agent turn ends, whether it completed, failed, was blocked, or timed out. The message includes the conversation title, model, project directory, turn status, and a summary of the latest reply, so you can step away and still know when the run is done. Setup is deliberately small: install it with one command, add a SendKey, and apply a one-line patch. Delivery is fire-and-forget; a failed push writes one log entry and never blocks the agent loop. See [package docs](packages/serverchan-notify/README.md).
+`dsh-serverchan-notify` sends a WeChat notification through ServerChan3 (Server酱3) whenever a top-level DSH agent turn ends, whether it completed, failed, was blocked, or timed out. The message includes the conversation title, model, project directory, turn status, and a summary of the latest reply, so you can step away and still know when the run is done. It also pushes when the agent calls `ask_user_question` — the moment the run is blocked on you — carrying each question, its options, and their descriptions (`notifyQuestions: false` turns that off). Setup is deliberately small: install it with one command, add a SendKey, and apply a one-line patch. Delivery is fire-and-forget; a failed push writes one log entry and never blocks the agent loop. See [package docs](packages/serverchan-notify/README.md).
 
 ### Qwen Token Plan provider · `dsh-qwen-token-plan-cn-responses`
 
