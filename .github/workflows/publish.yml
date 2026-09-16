@@ -99,7 +99,9 @@ jobs:
         id: availability
         shell: bash
         run: |
-          if [[ "$(npm view "${{ steps.package.outputs.workspace }}@${{ steps.package.outputs.version }}" version 2>/dev/null || true)" == "${{ steps.package.outputs.version }}" ]]; then
+          # --prefer-online: this read caches a packument in the runner's npm cache, and
+          # a stale entry here is what the later verification would keep re-reading.
+          if [[ "$(npm view "${{ steps.package.outputs.workspace }}@${{ steps.package.outputs.version }}" version --prefer-online 2>/dev/null || true)" == "${{ steps.package.outputs.version }}" ]]; then
             echo "publish=false" >> "$GITHUB_OUTPUT"
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
@@ -113,8 +115,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          actual="$(npm view "${{ steps.package.outputs.workspace }}@${{ steps.package.outputs.version }}" version)"
-          test "$actual" = "${{ steps.package.outputs.version }}"
+          package="${{ steps.package.outputs.workspace }}"
+          version="${{ steps.package.outputs.version }}"
+          # Registry visibility is eventually consistent: a read taken right after a
+          # successful upload can still 404, which fails this job and skips the GitHub
+          # release even though the version is live. Poll within a bounded budget, and
+          # revalidate on every attempt (--prefer-online) rather than re-reading a
+          # cached packument that would keep reporting the same stale answer.
+          attempts=12
+          visible=""
+          for attempt in $(seq 1 "$attempts"); do
+            visible="$(npm view "$package@$version" version --prefer-online 2>/dev/null || true)"
+            if [[ "$visible" == "$version" ]]; then
+              echo "$package@$version is live on npm (attempt $attempt/$attempts)."
+              break
+            fi
+            echo "::notice::$package@$version is not visible yet (attempt $attempt/$attempts); retrying in 5s."
+            sleep 5
+          done
+          if [[ "$visible" != "$version" ]]; then
+            echo "$package@$version never became visible on npm after $attempts attempts." >&2
+            exit 1
+          fi
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             echo "GitHub release already exists."
           else
