@@ -26,9 +26,9 @@ Each package installs independently. Installing one never silently enables the o
 
 `dsh-qwen-token-plan-cn-responses` is a maintained DSH provider for the personal Qwen Token Plan, and it is also the one the maintainer uses every day. DSH's built-in provider, shown as "Qwen Token Plan 个人版（官方）" and inherited from Pi, uses Chat Completions, so official built-in tools such as web_search and code_interpreter cannot be triggered; its model catalog is manually maintained as well, and the context window and reasoning-effort metadata often drift from reality. This plugin uses the Responses API for native tool calling, syncs its model catalog with the official documentation every day, and records the actual context window and reasoning effort for each model. That also means models such as qwen3.8-max and deepseek-v4-pro can appear in the selector with accurate settings sooner.
 
-![Model selector: the plugin's new "Qwen Token Plan 个人版" provider](docs/images/qwen-model-selector.png)
-
-![Model list: per-model protocol and built-in tool annotations](docs/images/qwen-model-list.png)
+<div align="center">
+  <img src="docs/images/qwen-model-list.png" width="250" alt="Model list: per-model protocol and built-in tool annotations" />
+</div>
 
 See [package docs](packages/qwen-token-plan-cn-responses/README.md).
 
